@@ -1,6 +1,6 @@
-## Instalacja IRCd.
+# Instalacja IRCd.
 
-### 1.1 Skrypt konfiguracyjny
+## 1.1 Skrypt konfiguracyjny
 
 Ten pakiet używa skryptu konfiguracyjnego GNU do swojej konfiguracji. Wystarczy rozpakować dystrybucję i uruchomić skrypt „configure”. Skrypt ten wywoła konfigurację, która zbada Twój system w poszukiwaniu ewentualnych specyficznych ustawień i skonfiguruje plik Makefile oraz plik z domyślnymi definicjami #define ($arch/setup.h).
 
@@ -20,7 +20,7 @@ Istnieje kilka opcji do „configure”, które mogą pomóc lub zmienić domyś
 - `--enable-ip6` Włącza obsługę IPv6 (patrz uwagi poniżej)
 - `--enable-dsm` Włącza obsługę Dynamicznych Modułów Dzielonych dla iauth
 
-### 1.2 Uwagi dla użytkowników Cygwin32
+## 1.2 Uwagi dla użytkowników Cygwin32
 
 Demony z wersji 2.11.0 kompilują się poprawnie na systemach W32, które mają środowisko GNU-Win32 (http://www.cygnus.com/misc/gnu-win32/) skonfigurowane. W momencie wydania testy zostały przeprowadzone przy użyciu wersji b20.1 biblioteki Cygwin32.
 
@@ -30,7 +30,7 @@ Ponadto, serwer IRC potrzebuje pliku resolv.conf do inicjalizacji resolvera. Ten
 
 Wreszcie, iauth jest automatycznie wyłączony. Nawet jeśli program iauth kompiluje się poprawnie, konieczne jest dodatkowe działanie, aby uzyskać działającą linię komunikacyjną między serwerem IRC a programem iauth.
 
-### 1.3 Uwagi dotyczące obsługi IPv6
+## 1.3 Uwagi dotyczące obsługi IPv6
 
 Jedyną częścią oprogramowania, która nie używa IPv6, jest wewnętrzny resolver serwera. Polega on na serwerach nazw określonych w „/etc/resolv.conf” jako adresy IPv4.
 
@@ -38,59 +38,59 @@ Ta wersja została przetestowana na następujących systemach IPv6: BSD/OS+KAME,
 
 Ze względu na to, że numeryczne adresy IPv6 zawierają znaki „:”, domyślny separator w pliku konfiguracyjnym serwera został zmieniony na „%”.
 
-## 2. Plik config.h
+# 2. Plik config.h
 
 Kolejnym krokiem jest zdefiniowanie opcji przed kompilacją. Robi się to poprzez edycję pliku „config.h” i zmianę różnych #DEFINE's.
 
-### 2.1 DEBUGMODE
+## 2.1 DEBUGMODE
 
 To powinno być zdefiniowane tylko do celów testowych i nigdy nie powinno być używane na serwerze produkcyjnym.
 
 Zdefiniuj DEBUGMODE, jeśli chcesz zobaczyć informacje do debugowania ircd podczas działania demona. Zazwyczaj ta funkcja jest niezdefiniowana, ponieważ ircd generuje dużą ilość danych wyjściowych. DEBUGMODE musi być zdefiniowane, aby działały opcje wiersza polecenia -t lub -x. Zdefiniowanie tego powoduje duże obciążenie dla serwera, ponieważ wykonuje on dużą ilość autodiagnostyki podczas działania.
 
-### 2.2 CACHED_MOTD
+## 2.2 CACHED_MOTD
 
 Serwer wysyła „motd” do każdego łączącego się klienta. Za każdym razem odczytuje go z dysku. To jest dość intensywne i może być niepożądane dla ruchliwych serwerów.
 
 Zdefiniowanie CACHED_MOTD spowoduje, że serwer przechowuje „motd” w pamięci i odczytuje go z dysku tylko wtedy, gdy plik ulegnie zmianie podczas ponownego hashowania.
 
-### 2.3 CHROOTDIR
+## 2.3 CHROOTDIR
 
 Aby korzystać z funkcji CHROOTDIR, upewnij się, że jest ona zdefiniowana (#define'd) i że serwer działa jako root. Lepiej używać innych (zewnętrznych) sposobów konfiguracji środowiska chroot dla ircd i uruchamiać go stamtąd, nie wymagając uprawnień roota.
 
-### 2.4 ENABLE_SUMMON, ENABLE_USERS
+## 2.4 ENABLE_SUMMON, ENABLE_USERS
 
 Dla świadomych bezpieczeństwa administratorów serwera, mogą chcieć pozostawić ENABLE_USERS niezdefiniowane, wyłączając polecenie USERS, które można użyć do pozyskania informacji tak samo jak finger. ENABLE_SUMMON przełącza, czy serwer będzie próbował przywoływać lokalnych użytkowników na irc, wysyłając wiadomość podobną do tej z talk(1) na terminal użytkownika.
 
-### 2.5 SHOW_INVISIBLE_LUSERS, NO_DEFAULT_INVISIBLE
+## 2.5 SHOW_INVISIBLE_LUSERS, NO_DEFAULT_INVISIBLE
 
 Na dużych sieciach IRC liczba użytkowników niewidocznych jest prawdopodobnie duża i jej raportowanie nie powoduje problemów. Aby to ułatwić i wpłynąć na to, SHOW_INVISIBLE_LUSERS służy do raportowania liczby niewidocznych użytkowników w poleceniu LUSERS dla wszystkich osób, a nie tylko operatorów. NO_DEFAULT_INVISIBLE define jest używany do przełączania automatycznego ukrywania klientów, gdy się rejestrują.
 
-### 2.6 OPER_KILL, OPER_REHASH, OPER_RESTART, OPER_SET, LOCAL_KILL_ONLY
+## 2.6 OPER_KILL, OPER_REHASH, OPER_RESTART, OPER_SET, LOCAL_KILL_ONLY
 
 Trzy polecenia dostępne tylko dla operatorów, KILL, REHASH, RESTART i SET, mogą być wyłączone, aby zapobiec przypadkowym niepożądanym działaniom operatora. Aby dalej ograniczyć działania gości operatorów, można zdefiniować LOCAL_KILL_ONLY, aby umożliwić tylko KILLowanie lokalnie podłączonych klientów.
 
-### 2.7 ZIP_LINKS, ZIP_LEVEL
+## 2.7 ZIP_LINKS, ZIP_LEVEL
 
 Od wersji 2.9.3 serwera, połączenia między serwerami mogą być kompresowane za pomocą biblioteki zlib. Aby skompilować serwer z tą funkcją, MUSISZ mieć już skompilowany pakiet zlib (wersja 1.0 lub nowsza) i zdefiniować ZIP_LINKS w pliku config.h. Użycie kompresji dla połączeń między serwerami jest konfigurowane osobno w pliku ircd.conf dla każdego połączenia między serwerami. ZIP_LEVEL pozwala kontrolować poziom kompresji, który zostanie użyty. Wartości powyżej 5 zauważalnie zwiększą zużycie CPU przez serwer.
 
 Pakiet zlib można znaleźć na stronie http://www.cdrom.com/pub/infozip/zlib/. Format danych używany przez bibliotekę zlib jest opisany w RFC (Request for Comments) od 1950 do 1952 w plikach ftp://ds.internic.net/rfc/rfc1950.txt (format zlib), rfc1951.txt (format deflate) i rfc1952.txt (format gzip). Te dokumenty są również dostępne w innych formatach na stronie ftp://ftp.uu.net/graphics/png/documents/zlib/zdoc-index.html
 
-### 2.8 SLOW_ACCEPT
+## 2.8 SLOW_ACCEPT
 
 Ta opcja jest domyślnie niezdefiniowana, ale jest potrzebna na niektórych systemach operacyjnych. Tworzy ona sztuczne opóźnienie w przetwarzaniu przychodzących połączeń. Na danym porcie nie będzie przetwarzane więcej niż 1 połączenie co 2 sekundy.
 
 Ponieważ jest niezdefiniowana, pozwala serwerowi przetwarzać połączenia tak szybko, jak tylko może, co może powodować problemy na niektórych systemach operacyjnych (takich jak SunOS) i może być nadużywane (szybkie masowe dołączanie clonebotów...), z tych powodów, jeśli zdecydujesz się pozostawić SLOW_ACCEPT niezdefiniowane, MUSISZ zdefiniować CLONE_CHECK.
 
-### 2.9 CLONE_CHECK
+## 2.9 CLONE_CHECK
 
 Ta opcja jest domyślnie zdefiniowana i działa jako opakowanie, sprawdzając przychodzące połączenia wcześnie przed rozpoczęciem zapytania ident. Domyślnie serwer nie będzie akceptować więcej niż 10 połączeń z tego samego hosta w ciągu 2 sekund.
 
-### 2.10 Inne #define's
+## 2.10 Inne #define's
 
 Reszta zmienialnych przez użytkownika #define's powinna być raczej samoopisująca się w pliku config.h. *NIE* jest zalecane zmienianie żadnego z undefiniowanych plików po linii zawierającej „STOP STOP”.
 
-## 3. Edycja pliku Makefile i kompilacja
+# 3. Edycja pliku Makefile i kompilacja
 
 Ten pakiet używa teraz GNU autoconf do sondowania Twojego systemu i generowania odpowiedniego pliku Makefile. Niemniej jednak, możesz go przeczytać, aby sprawdzić wartości wygenerowane przez skrypt configure. W szczególności, wszystkie nazwy plików i ścieżki do plików binarnych, plików dziennika, plików konfiguracyjnych itp. są tam zdefiniowane. Zaleca się korzystanie z opcji opisanych w sekcji „skrypt configure” zamiast edytować wygenerowany plik Makefile. Niemniej jednak te opcje nie zapewniają pełnej kontroli nad tymi wartościami, w takim przypadku musisz edytować plik Makefile bezpośrednio.
 
@@ -98,7 +98,7 @@ Aby zbudować pakiet, wpisz „make all”. Jeśli wszystko pójdzie dobrze, mo�
 
 Jeśli masz problemy z kompilacją ircd, skopiuj Makefile.in do Makefile i edytuj plik Makefile odpowiednio.
 
-## 4. Plik ircd.conf
+# 4. Plik ircd.conf
 
 Po zainstalowaniu programów ircd i irc, edytuj plik ircd.conf zgodnie z instrukcjami w tej sekcji i zainstaluj go w lokalizacji określonej w pliku config.h. W katalogu doc/ znajduje się przykładowy plik konfiguracyjny o nazwie example.conf.
 
@@ -123,12 +123,12 @@ Połączenia usługowe (S)
 Serwer odbicia (B)
 Z wyjątkiem typów „M” i „A” jest dozwolone mieć wiele rekordów tego samego typu. W niektórych przypadkach można mieć równoczesne rekordy. Ważne jest zaznaczenie, że zostanie użyty ostatni pasujący rekord. Jest to szczególnie przydatne przy konfigurowaniu rekordów I (połączenia klienta).
 
-### 4.1 Informacje o maszynie
+## 4.1 Informacje o maszynie
 
-#### Wprowadzenie
+### Wprowadzenie
 IRC musi poznać kilka rzeczy dotyczących Twojej witryny UNIX, a polecenie „M” określa te informacje dla IRC. Format tego polecenia jest następujący:
 
-#### Format
+### Format
 M:<Nazwa Serwera>:<Twój adres IP Internetowy>:<Lokalizacja geograficzna>:<Port>:<SID>
 M
 Polecenie „M” określa linię opisującą maszynę.
@@ -158,12 +158,12 @@ Ta linia oznacza: Nazwa mojego hosta to „tolsun.oulu.fi”, moja witryna znajd
 M:orion.cair.du.edu::Denver Colorado, USA:6667:00PS
 
 Ta linia oznacza: Nazwa mojego hosta to „orion.cair.du.edu”, moja witryna znajduje się w „Denver Colorado, USA”, a mój SID to „00PS”.
-### 4.2 Informacje administracyjne
+## 4.2 Informacje administracyjne
 
-#### Wprowadzenie
+### Wprowadzenie
 Linia „A” służy do przekazywania informacji administracyjnych o witrynie. Adres e-mail osoby zarządzającej serwerem powinien być zawarty tutaj na wypadek problemów.
 
-#### Format
+### Format
 A:<Twoje Imię/Lokalizacja>:<Twój Adres E-Mail>:<inne>::<nazwa sieci>
 A
 To określa rekord Administratora.
@@ -190,12 +190,12 @@ Wyglądałoby to tak, gdyby zostało wydrukowane za pomocą polecenia /admin:
 Jeff Trim - Denver Colorado, USA INET jtrim@orion.cair.du.edu UUCP {hao,isis}!udenva!jtrim Terve! Hei! Heippa! Have you said hello in Finnish today? ;)
 
 Należy zauważyć, że rekord A nie może być podzielony na wiele linii; zazwyczaj będzie dłuższy niż 80 znaków i dlatego zawija się na ekranie.
-### 4.3 Połączenia Portowe
+## 4.3 Połączenia Portowe
 
-#### Wprowadzenie
+### Wprowadzenie
 Linia portowa dodaje serwerowi elastyczność w akceptowaniu połączeń. Poprzez użycie tej linii w pliku ircd.conf, można łatwo skonfigurować, na których portach serwer będzie nasłuchiwał na przychodzące połączenia. Obejmuje to zarówno porty internetowe, które obsługują połączenia przez sieć, jak i porty domeny Unix, które umożliwiają połączenia wewnątrz jednego komputera.
 
-#### Format
+### Format
 P:<Adres IP Internetowy>:<*>::<Port>:
 P:<Katalog>:<*>:<*>:<Port>:
 Porty Internetowe
@@ -223,9 +223,9 @@ Ten przykład tworzy gniazdo Unix o nazwie „6667” w katalogu /tmp/.ircd. Gni
 Uwaga
 Aby uruchomić serwer, musisz mieć co najmniej jedną linię P określającą port, na którym serwer ma nasłuchiwać na połączenia. Jeśli jednak uruchamiasz serwer z poziomu usługi inetd (Internet Super Server), nie jest wymagane posiadanie własnej linii P w pliku konfiguracyjnym.
 
-### 4.4 Klasy Połączeń
+## 4.4 Klasy Połączeń
 
-#### Wprowadzenie
+### Wprowadzenie
 Aby umożliwić bardziej efektywne wykorzystanie MAXIMUM_LINKS, wprowadzono klasy połączeń. Wszystkie klienty należą do konkretnej klasy połączeń.
 
 Każda linia dotycząca serwera powinna mieć taki sam numer jak szóste pole. Jeśli to pole jest pominięte, serwer domyślnie ustawia je na 0, korzystając z wartości domyślnych z pliku config.h.
@@ -234,7 +234,7 @@ Aby zdefiniować klasę połączeń, musisz zawrzeć linię Y: w pliku ircd.conf
 
 Obecnie linia Y: MUSI pojawić się w pliku ircd.conf PRZED jej użyciem w jakikolwiek inny sposób.
 
-#### Format
+### Format
 Y:<Klasa>:<Częstotliwość Ping>:<Częstotliwość Połączenia>:<Maksymalne Połączenia>:<SendQ>:<Limit Lokalny>:<Limit Globalny>
 Y
 To określa rekord klasy.
@@ -278,7 +278,7 @@ Jeśli zdefiniujesz limit globalny, powinieneś również zdefiniować limit lok
 Uwaga
 Limity lokalne i globalne dotyczą tylko użytkowników (linie I), nie serwerów ani usług.
 
-#### Przykład
+### Przykład
 Y:23:120:300:5:800000:0:0: (klasa serwera)
 
 To definiuje klasę 23, która pozwala na 5 automatycznych połączeń, które są sprawdzane co 300 sekund. Połączenie może pozostawać w milczeniu przez 120 sekund, zanim zostanie wysłane PING. UWAGA: pola 3 i 4 są w sekundach. SendQ jest ustawione na 800000 bajtów.
@@ -291,16 +291,16 @@ Y:2:60:0:50:20000:2.1:5: (klasa klienta)
 
 W przypadku klasy klienta pola są interpretowane nieco inaczej. Ta klasa (numer 1) może być używana przez maksymalnie 50 użytkowników. Połączenia mogą pozostawać w milczeniu przez 60 sekund, zanim zostanie wysłany PING. SendQ jest ustawione na 20000 bajtów. Nowe połączenie w tej klasie będzie dozwolone tylko wtedy, gdy nie będzie więcej niż 2 inne lokalne połączenia z tego samego adresu IP, 1 lokalne połączenie od tego samego użytkownika z tego samego adresu IP lub więcej niż 5 innych połączeń w sieci z tej samej nazwy hosta.
 
-### 4.5 Połączenia klientów
+## 4.5 Połączenia klientów
 
 Jak umożliwić klientom podłączanie się do twojego IRCD.
 
-#### Wprowadzenie
+### Wprowadzenie
 Klientem jest program, który łączy się z demonem ircd (ircd). Istnieją klienty napisane w C, GNU Emacs Lisp i wielu innych językach. Program "irc" to klient w języku C. Każda osoba, która rozmawia za pośrednictwem IRC, korzysta z własnego klienta.
 
 Plik ircd.conf zawiera wpisy, które określają, które klienty mogą podłączać się do twojego demona IRC. Oczywiście chcesz, aby klienty z twojej własnej maszyny mogły się podłączać. Możesz też chcieć pozwolić klientom z innych witryn na podłączanie się. Te zdalne klienty będą korzystać z twojego serwera jako punktu połączenia. Wszystkie wiadomości wysyłane przez tych klientów będą przechodzić przez twoją maszynę.
 
-#### Format
+### Format
 I:<Adres docelowy hosta>:<Hasło>:<Nazwa docelowych hostów>:<Port>:<Klasa>:<Flagi>
 Uwaga
 Małe "i" jest równe flaga "R" w przypadku "I".
@@ -339,7 +339,7 @@ Ograniczona linia I: oznacza, że ​​klienci pasujący do takiej linii I nie 
 Uwaga
 Serwer najpierw sprawdza, czy nazwa hosta klienta (lub dowolne aliasy) pasuje do pola Nazwa Hosta docelowego. Jeśli zostanie znalezione dopasowanie, klient zostanie zaakceptowany. Jeśli nie, serwer sprawdza, czy adres IP klienta pasuje do pola Adres Hosta docelowego. Pasujące pole jest używane do ustawienia nazwy klienta: na przykład, jeśli klient pasuje do pola Adres Hosta docelowego, zostanie wyświetlony na IRC z adresem numerycznym (nawet jeśli ten adres jest rozpoznawalny). Jeśli pole Nazwa Hosta docelowego jest puste, zawsze używana jest nazwa hosta (jeśli jest dostępna).
 
-#### Przykłady
+### Przykłady
 Na przykład, jeśli instalujesz IRC na tolsun.oulu.fi i chcesz pozwolić na przykład na to, żebyśmy przyjęli, że tworzysz ten plik dla tolsun i chcesz, aby Twoi własni klienci mogli łączyć się z Twoim serwerem, możesz dodać ten wpis do pliku:
 
 I:::tolsun.oulu.fi::1
@@ -378,14 +378,14 @@ Zezwala klientom z maszyn, których adres IP znajduje się w bloku "135.11.35.0/
 
 tag/NEW!!!/ Od wersji 2.11.0 serwera wprowadzono flagi linii I:.
 
-### 4.6 Uprawnienia operatora
+## 4.6 Uprawnienia operatora
 
 Jak stać się administratorem IRC na swojej witrynie
 
-#### Wprowadzenie
+### Wprowadzenie
 Aby stać się administratorem IRC, IRC musi wiedzieć, kto jest upoważniony do zostania operatorem i jakie są ich "Nick" i "Hasło".
 
-#### Format
+### Format
 O:<Nazwa Hosta DOCELOWEGO>:<Hasło>:<Nick>:<Port>:<Klasa>
 O
 Określa rekord operatora.
@@ -408,7 +408,7 @@ Nie używany.
 Klasa
 Pole klasy powinno odnosić się do istniejącej klasy (najlepiej o niższym numerze niż dla odpowiedniej linii I) i określa maksymalną liczbę jednoczesnych użyczeń linii O dozwoloną przez pole max. połączeń w linii Y.
 
-#### Przykład
+### Przykład
 o:orion.cair.du.edu:pyunxc:Jeff::1
 
 Jest OPERATOR na "orion.cair.du.edu", który może uzyskać uprawnienia operatora, jeśli poda hasło "pyunxc" i używa NICKNAME "Jeff".
@@ -416,14 +416,14 @@ Jest OPERATOR na "orion.cair.du.edu", który może uzyskać uprawnienia operator
 Uwaga
 Nazwa HOSTA akceptuje maski bitowe IP.
 
-### 4.7 Wykluczone konta
+## 4.7 Wykluczone konta
 
 Usuń niepożądanego użytkownika z IRC na swojej stronie.
 
-#### Wprowadzenie
+### Wprowadzenie
 Oczywiście, miejmy nadzieję, że nie będziesz musiał korzystać z tego polecenia. Niestety czasami użytkownik może stać się trudny do zarządzania, i to jest twoje jedyne rozwiązanie - polecenie KILL USER. TO POLECENIE DOTYCZY TYLKO TWOJEGO SERWERA - Jeśli ten użytkownik może połączyć się z innym SERWEREM gdziekolwiek indziej w sieci IRC, to musiałbyś skontaktować się z administratorem na tej stronie, aby wyłączyć dostęp z tego SERWERA IRCD.
 
-#### Format
+### Format
 K:<Nazwa Hosta>:<okres czasu (y)|komentarz>:<Użytkownik>:<port>:
 k:<Nazwa Hosta>:<okres czasu (y)|komentarz>:<Autoryzacja>:<port>:
 K
@@ -450,7 +450,7 @@ To pole będzie porównywane z odpowiedzią serwera identyfikacyjnego. Ważne je
 Port
 Port, na którym linia Kill będzie działać. 0 oznacza wszystkie porty.
 
-#### Przykłady
+### Przykłady
 K:orion.cair.du.edu::jtrim:0:
 
 Jeśli użytkownik "jtrim" łączy się z IRC z hosta "orion.cair.du.edu", NATYCHMIAST GO USUŃ z mojego IRCD.
@@ -479,7 +479,7 @@ K:=192.11.35.0/24::*:0:
 
 Ta linia zabrania wszystkim hostom, których adres IP jest z sieci "192.11.35.0/24" i które nie zostały rozwiązane, aby zalogować się na ircd.
 
-### 4.8 Połączenia serwerowe
+## 4.8 Połączenia serwerowe
 
 Jak łączyć się z innymi serwerami, jak inne serwery mogą się z Tobą łączyć
 
@@ -497,7 +497,7 @@ PROSZĘ OGRANICZ liczbę hostów, do których będziesz próbował się połącz
 1. aby oszczędzić swój serwer od dodatkowego obciążenia i opóźnień dla użytkowników
 2. aby zaoszczędzić ruch sieciowy w internecie (pamiętaj o starym programie rwho, który miał problemy z ruchem sieciowym, gdy liczba maszyn wzrosła).
 
-#### Format
+### Format
 C:<Adres Hosta DOCelowego>:<Hasło>:<Nazwa Hosta DOCelowego>:<Port DOCELU>:<Klasa>:<Źródło IP>
 na przykład:
 
@@ -608,7 +608,7 @@ Jeśli liczba masek wynosiłaby 2, maska domeny brzmiałaby "*.fi". Należy zauw
 
 Radzę nie używać serwerów z maską domen, zanim dokładnie nie zrozumiesz, jak się ich używa. Są one głównie korzystne dla "backbonów" krajów i innych obszarów o wspólnych domenach.
 
-### 4.9 Zabraniaj automatycznych połączeń
+## 4.9 Zabraniaj automatycznych połączeń
 
 Wprowadzenie
 Wpisy typu D (ang. D lines) zostały wprowadzone, aby umożliwić administratorom serwerów większą kontrolę nad tym, jak są wykonywane automatyczne połączenia. Prawdopodobnie będzie to przydatne tylko dla dużych sieci, które mają skomplikowane konfiguracje.
@@ -636,7 +636,7 @@ D::2:eff.org:3:
 
 Nie łącz się automatycznie z ``eff.org'', ani z żadnym serwerem należącym do klasy ``3'', jeśli serwer zdefiniowany jako należący do klasy ``2'' jest obecnie w sieci.
 
-### 4.10 Połączenia typu Hub
+## 4.10 Połączenia typu Hub
 
 Wprowadzenie
 W przeciwieństwie do linii typu L, serwer implementuje także linie typu H, aby określić, które serwery mogą działać jako huby (węzły) i dla jakich serwerów mogą "hubować". Jeśli serwer ma dostarczyć tylko swoją nazwę (to znaczy działać jako samotny liść), to nie jest wymagana żadna linia H, w przeciwnym przypadku należy dodać linię H.
@@ -671,7 +671,7 @@ jest dozwolone, podobnie jak
 L:*.edu:*:*.au::
 L:*.com:*:*.au::
 
-### 4.11 Połączenia typu Leaf
+## 4.11 Połączenia typu Leaf
 
 Wprowadzenie
 Aby zapobiec serwerom, które powinny działać tylko jako liście (leaf), przypadkowo stawaniu się węzłami (hub), wprowadzono linię L, dzięki której węzły mogą dowiedzieć się, które serwery powinny i nie powinny być traktowane jako liście. Serwer typu leaf powinien pozostać węzłem (node) przez cały okres swojego życia, podczas gdy jest podłączony do sieci serwerów IRC. Jest jednak dość łatwo źle skonfigurować serwer typu leaf, co może stworzyć problemy, stając się węzłem dwóch lub więcej serwerów i przestając być leafem. Linia L pozwala administratorowi serwera IRC typu "Hub" "zatrzymać" serwer, który ma działać jako leaf i próbuje stać się węzłem. Na przykład serwer typu leaf, który łączy się z innym serwerem, który nie ma dla niego linii L, zostanie rozłączony przez ten serwer, przywracając go jako leafa.
@@ -687,7 +687,7 @@ Nazwa serwera, który jest podłączony do ciebie i dla którego chcesz narzuci�
 Maksymalna Głębokość
 Maksymalna dozwolona głębokość dla tego leafa, a jeśli nie jest określona, przyjmuje się wartość 1. Głębokość jest sprawdzana za każdym razem, gdy serwer odbiera komunikat SERVER. Liczba skoków do serwera jest polem, które jest sprawdzane w kontekście maksymalnej głębokości, a jeśli jest większa, połączenie do serwera, które uczyniło swojego leafa zbyt głęboko, zostaje zerwane. Aby linia L zadziałała, oba pola, 2 i 4, muszą pasować do nowego serwera wprowadzanego i serwera odpowiedzialnego za wprowadzenie tego nowego serwera.
 
-### 4.12 Ograniczenia wersji
+## 4.12 Ograniczenia wersji
 
 Wprowadzenie
 Linie V są używane do ograniczania połączeń serwerów do Twojego serwera na podstawie ich wersji i opcji kompilacji.
@@ -734,7 +734,7 @@ Tylko pierwsze 4 cyfry numeru wersji są standardowe: definiują one wersję pro
 Flagi
 nie są standardowe. Dlatego to pole powinno zawsze zawierać konkretną identyfikację.
 
-### 4.13 Wykluczone maszyny
+## 4.13 Wykluczone maszyny
 
 Zabranianie SERVEROM na twojej sieci IRC.
 
@@ -746,7 +746,7 @@ Q::z powodu luk w zabezpieczeniach:foo.bar.baz::
 
 To polecenie wyklucza serwer o nazwie "foo.bar.baz", jako przyczynę podano luki w zabezpieczeniach (należy podać powód, to jest uprzejme). Pierwsze pole jest nieużywane, więc pozostaw je puste.
 
-### 4.14 Połączenia usług
+## 4.14 Połączenia usług
 
 Wprowadzenie
 Usługa to szczególny rodzaj klienta IRC. Nie ma on pełnych zdolności normalnego użytkownika, ale może zachowywać się w sposób bardziej aktywny niż zwykły klient.
@@ -772,7 +772,8 @@ Pole klasy powinno odnosić się do istniejącej klasy.
 
 Uwagi
 Usługa to niezbyt przydatny rodzaj klienta, nie może dołączać do kanałów ani wydawać pewnych poleceń, chociaż większość z nich jest dostępna. Usługi są odrzucane po wysłaniu nieznanego lub niedozwolonego polecenia. Usługi jednak nie podlegają kontroli nad nadmiernym ruchem i mogą uzyskać specjalne przywileje. Dlatego mądrze jest bardzo ostrożnie korzystać z linii S.
-### 4.15 Serwer przekierowujący (bounce)
+
+## 4.15 Serwer przekierowujący (bounce)
 
 Wprowadzenie
 To dostarcza sposób przekierowywania klientów na inny serwer. Te informacje są udostępniane klientom, którzy są odrzucani podczas próby połączenia, albo dlatego, że ich klasa połączenia jest pełna, albo serwer jest pełen, albo nie są upoważnieni do połączenia.
