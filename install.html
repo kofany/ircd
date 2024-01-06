@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instalacja IRCd</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__left">
+    <div class="stackedit__toc">
+      
+<ul>
+<li><a href="#instalacja-ircd.">1. Instalacja IRCd.</a>
+<ul>
+<li><a href="#skrypt-konfiguracyjny">1.1 Skrypt konfiguracyjny</a></li>
+<li><a href="#uwagi-dla-użytkowników-cygwin32">1.2 Uwagi dla użytkowników Cygwin32</a></li>
+<li><a href="#uwagi-dotyczące-obsługi-ipv6">1.3 Uwagi dotyczące obsługi IPv6</a></li>
+</ul>
+</li>
+<li><a href="#plik-config.h">2. Plik config.h</a>
+<ul>
+<li><a href="#debugmode">2.1 DEBUGMODE</a></li>
+<li><a href="#cached_motd">2.2 CACHED_MOTD</a></li>
+<li><a href="#chrootdir">2.3 CHROOTDIR</a></li>
+<li><a href="#enable_summon-enable_users">2.4 ENABLE_SUMMON, ENABLE_USERS</a></li>
+<li><a href="#show_invisible_lusers-no_default_invisible">2.5 SHOW_INVISIBLE_LUSERS, NO_DEFAULT_INVISIBLE</a></li>
+<li><a href="#oper_kill-oper_rehash-oper_restart-oper_set-local_kill_only">2.6 OPER_KILL, OPER_REHASH, OPER_RESTART, OPER_SET, LOCAL_KILL_ONLY</a></li>
+<li><a href="#zip_links-zip_level">2.7 ZIP_LINKS, ZIP_LEVEL</a></li>
+<li><a href="#slow_accept">2.8 SLOW_ACCEPT</a></li>
+<li><a href="#clone_check">2.9 CLONE_CHECK</a></li>
+<li><a href="#inne-defines">2.10 Inne #define’s</a></li>
+</ul>
+</li>
+<li><a href="#edycja-pliku-makefile-i-kompilacja">3. Edycja pliku Makefile i kompilacja</a></li>
+<li><a href="#plik-ircd.conf">4. Plik ircd.conf</a>
+<ul>
+<li><a href="#informacje-o-maszynie">4.1 Informacje o maszynie</a></li>
+<li><a href="#informacje-administracyjne">4.2 Informacje administracyjne</a></li>
+<li><a href="#połączenia-portowe">4.3 Połączenia Portowe</a></li>
+<li><a href="#klasy-połączeń">4.4 Klasy Połączeń</a></li>
+<li><a href="#połączenia-klientów">4.5 Połączenia klientów</a></li>
+<li><a href="#uprawnienia-operatora">4.6 Uprawnienia operatora</a></li>
+<li><a href="#wykluczone-konta">4.7 Wykluczone konta</a></li>
+<li><a href="#połączenia-serwerowe">4.8 Połączenia serwerowe</a></li>
+<li><a href="#zabraniaj-automatycznych-połączeń">4.9 Zabraniaj automatycznych połączeń</a></li>
+<li><a href="#połączenia-typu-hub">4.10 Połączenia typu Hub</a></li>
+<li><a href="#połączenia-typu-leaf">4.11 Połączenia typu Leaf</a></li>
+<li><a href="#ograniczenia-wersji">4.12 Ograniczenia wersji</a></li>
+<li><a href="#wykluczone-maszyny">4.13 Wykluczone maszyny</a></li>
+<li><a href="#połączenia-usług">4.14 Połączenia usług</a></li>
+<li><a href="#serwer-przekierowujący-bounce">4.15 Serwer przekierowujący (bounce)</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+  </div>
+  <div class="stackedit__right">
+    <div class="stackedit__html">
+      <h1 id="instalacja-ircd.">1. Instalacja IRCd.</h1>
+<h2 id="skrypt-konfiguracyjny">1.1 Skrypt konfiguracyjny</h2>
+<p>Ten pakiet używa skryptu konfiguracyjnego GNU do swojej konfiguracji. Wystarczy rozpakować dystrybucję i uruchomić skrypt „configure”. Skrypt ten wywoła konfigurację, która zbada Twój system w poszukiwaniu ewentualnych specyficznych ustawień i skonfiguruje plik Makefile oraz plik z domyślnymi definicjami #define ($arch/setup.h).</p>
+<p>Istnieje kilka opcji do „configure”, które mogą pomóc lub zmienić domyślne zachowanie:</p>
+<ul>
+<li><code>--prefix=DIR</code> zmienia domyślny katalog, do którego ircd zostanie zainstalowany przy użyciu „make install”. Domyślnie jest to /usr/local</li>
+<li><code>--sbindir=DIR</code> zmienia domyślny katalog, w którym znajdą się pliki wykonywalne systemowego administratora. Ważne jest, aby to odpowiednio ustawić. (domyślnie jest to prefix/sbin)</li>
+<li><code>--logdir=DIR</code> zmienia domyślny katalog, w którym będą przechowywane pliki logów IRC. (domyślnie jest to prefix/var/log/ircd)</li>
+<li><code>--sysconfdir=DIR</code> zmienia domyślny katalog, w którym będą przechowywane pliki konfiguracyjne serwera IRC. (domyślnie jest to prefix/etc)</li>
+<li><code>--localstatedir=DIR</code> zmienia domyślny katalog, w którym będą przechowywane pliki stanu serwera IRC. (domyślnie jest to prefix/var/run)</li>
+<li><code>--resconf=FILE</code> definiuje plik używany przez ircd do inicjalizacji swojego resolvera. (domyślnie jest to /etc/resolv.conf)</li>
+<li><code>--zlib-include=DIR</code> określa katalog, w którym znajduje się plik nagłówkowy zlib.</li>
+<li><code>--zlib-library=DIR</code> określa katalog, w którym znajduje się biblioteka zlib.</li>
+<li><code>--zlib-prefix=DIR</code> określa prefiks lokalizacji zlib. Nadpisuje dwie poprzednie opcje. (Katalog nagłówkowy powinien znajdować się w prefix/include, a biblioteka w prefix/lib).</li>
+<li><code>--with-zlib</code> to domyślna opcja. „configure” szuka na Twoim systemie biblioteki zlib. Jeśli zostanie znaleziona, ircd będzie linkowany z jej użyciem. To nie oznacza, że możesz używać kompresji linków serwera, do tego potrzebujesz również zdefiniować ZIP_LINKS (patrz sekcja poniżej).</li>
+<li><code>--without-zlib</code> informuje „configure”, aby nie szukał biblioteki zlib. Zdefiniowanie tej opcji uniemożliwi używanie kompresji linków serwera.</li>
+<li><code>--enable-ip6</code> Włącza obsługę IPv6 (patrz uwagi poniżej)</li>
+<li><code>--enable-dsm</code> Włącza obsługę Dynamicznych Modułów Dzielonych dla iauth</li>
+</ul>
+<h2 id="uwagi-dla-użytkowników-cygwin32">1.2 Uwagi dla użytkowników Cygwin32</h2>
+<p>Demony z wersji 2.11.0 kompilują się poprawnie na systemach W32, które mają środowisko GNU-Win32 (<a href="http://www.cygnus.com/misc/gnu-win32/">http://www.cygnus.com/misc/gnu-win32/</a>) skonfigurowane. W momencie wydania testy zostały przeprowadzone przy użyciu wersji b20.1 biblioteki Cygwin32.</p>
+<p>Podczas kompilacji na takim systemie upewnij się, że dokładnie zastosowałeś się do notatek instalacyjnych Cygwin32. W szczególności upewnij się, że istnieją następujące pliki: /bin/cp.exe, /bin/mv.exe, /bin/rm.exe i /bin/sh.exe.</p>
+<p>Ponadto, serwer IRC potrzebuje pliku resolv.conf do inicjalizacji resolvera. Ten plik może być umieszczony w dowolnym miejscu (patrz opcje configure) i zazwyczaj znajduje się w /etc na systemach UNIX.</p>
+<p>Wreszcie, iauth jest automatycznie wyłączony. Nawet jeśli program iauth kompiluje się poprawnie, konieczne jest dodatkowe działanie, aby uzyskać działającą linię komunikacyjną między serwerem IRC a programem iauth.</p>
+<h2 id="uwagi-dotyczące-obsługi-ipv6">1.3 Uwagi dotyczące obsługi IPv6</h2>
+<p>Jedyną częścią oprogramowania, która nie używa IPv6, jest wewnętrzny resolver serwera. Polega on na serwerach nazw określonych w „/etc/resolv.conf” jako adresy IPv4.</p>
+<p>Ta wersja została przetestowana na następujących systemach IPv6: BSD/OS+KAME, Digital Unix, FreeBSD+KAME, Linux, NetBSD+INRIA.</p>
+<p>Ze względu na to, że numeryczne adresy IPv6 zawierają znaki „:”, domyślny separator w pliku konfiguracyjnym serwera został zmieniony na „%”.</p>
+<h1 id="plik-config.h">2. Plik config.h</h1>
+<p>Kolejnym krokiem jest zdefiniowanie opcji przed kompilacją. Robi się to poprzez edycję pliku „config.h” i zmianę różnych #DEFINE’s.</p>
+<h2 id="debugmode">2.1 DEBUGMODE</h2>
+<p>To powinno być zdefiniowane tylko do celów testowych i nigdy nie powinno być używane na serwerze produkcyjnym.</p>
+<p>Zdefiniuj DEBUGMODE, jeśli chcesz zobaczyć informacje do debugowania ircd podczas działania demona. Zazwyczaj ta funkcja jest niezdefiniowana, ponieważ ircd generuje dużą ilość danych wyjściowych. DEBUGMODE musi być zdefiniowane, aby działały opcje wiersza polecenia -t lub -x. Zdefiniowanie tego powoduje duże obciążenie dla serwera, ponieważ wykonuje on dużą ilość autodiagnostyki podczas działania.</p>
+<h2 id="cached_motd">2.2 CACHED_MOTD</h2>
+<p>Serwer wysyła „motd” do każdego łączącego się klienta. Za każdym razem odczytuje go z dysku. To jest dość intensywne i może być niepożądane dla ruchliwych serwerów.</p>
+<p>Zdefiniowanie CACHED_MOTD spowoduje, że serwer przechowuje „motd” w pamięci i odczytuje go z dysku tylko wtedy, gdy plik ulegnie zmianie podczas ponownego hashowania.</p>
+<h2 id="chrootdir">2.3 CHROOTDIR</h2>
+<p>Aby korzystać z funkcji CHROOTDIR, upewnij się, że jest ona zdefiniowana (#define’d) i że serwer działa jako root. Lepiej używać innych (zewnętrznych) sposobów konfiguracji środowiska chroot dla ircd i uruchamiać go stamtąd, nie wymagając uprawnień roota.</p>
+<h2 id="enable_summon-enable_users">2.4 ENABLE_SUMMON, ENABLE_USERS</h2>
+<p>Dla świadomych bezpieczeństwa administratorów serwera, mogą chcieć pozostawić ENABLE_USERS niezdefiniowane, wyłączając polecenie USERS, które można użyć do pozyskania informacji tak samo jak finger. ENABLE_SUMMON przełącza, czy serwer będzie próbował przywoływać lokalnych użytkowników na irc, wysyłając wiadomość podobną do tej z talk(1) na terminal użytkownika.</p>
+<h2 id="show_invisible_lusers-no_default_invisible">2.5 SHOW_INVISIBLE_LUSERS, NO_DEFAULT_INVISIBLE</h2>
+<p>Na dużych sieciach IRC liczba użytkowników niewidocznych jest prawdopodobnie duża i jej raportowanie nie powoduje problemów. Aby to ułatwić i wpłynąć na to, SHOW_INVISIBLE_LUSERS służy do raportowania liczby niewidocznych użytkowników w poleceniu LUSERS dla wszystkich osób, a nie tylko operatorów. NO_DEFAULT_INVISIBLE define jest używany do przełączania automatycznego ukrywania klientów, gdy się rejestrują.</p>
+<h2 id="oper_kill-oper_rehash-oper_restart-oper_set-local_kill_only">2.6 OPER_KILL, OPER_REHASH, OPER_RESTART, OPER_SET, LOCAL_KILL_ONLY</h2>
+<p>Trzy polecenia dostępne tylko dla operatorów, KILL, REHASH, RESTART i SET, mogą być wyłączone, aby zapobiec przypadkowym niepożądanym działaniom operatora. Aby dalej ograniczyć działania gości operatorów, można zdefiniować LOCAL_KILL_ONLY, aby umożliwić tylko KILLowanie lokalnie podłączonych klientów.</p>
+<h2 id="zip_links-zip_level">2.7 ZIP_LINKS, ZIP_LEVEL</h2>
+<p>Od wersji 2.9.3 serwera, połączenia między serwerami mogą być kompresowane za pomocą biblioteki zlib. Aby skompilować serwer z tą funkcją, MUSISZ mieć już skompilowany pakiet zlib (wersja 1.0 lub nowsza) i zdefiniować ZIP_LINKS w pliku config.h. Użycie kompresji dla połączeń między serwerami jest konfigurowane osobno w pliku ircd.conf dla każdego połączenia między serwerami. ZIP_LEVEL pozwala kontrolować poziom kompresji, który zostanie użyty. Wartości powyżej 5 zauważalnie zwiększą zużycie CPU przez serwer.</p>
+<p>Pakiet zlib można znaleźć na stronie <a href="http://www.cdrom.com/pub/infozip/zlib/">http://www.cdrom.com/pub/infozip/zlib/</a>. Format danych używany przez bibliotekę zlib jest opisany w RFC (Request for Comments) od 1950 do 1952 w plikach <a href="ftp://ds.internic.net/rfc/rfc1950.txt">ftp://ds.internic.net/rfc/rfc1950.txt</a> (format zlib), rfc1951.txt (format deflate) i rfc1952.txt (format gzip). Te dokumenty są również dostępne w innych formatach na stronie <a href="ftp://ftp.uu.net/graphics/png/documents/zlib/zdoc-index.html">ftp://ftp.uu.net/graphics/png/documents/zlib/zdoc-index.html</a></p>
+<h2 id="slow_accept">2.8 SLOW_ACCEPT</h2>
+<p>Ta opcja jest domyślnie niezdefiniowana, ale jest potrzebna na niektórych systemach operacyjnych. Tworzy ona sztuczne opóźnienie w przetwarzaniu przychodzących połączeń. Na danym porcie nie będzie przetwarzane więcej niż 1 połączenie co 2 sekundy.</p>
+<p>Ponieważ jest niezdefiniowana, pozwala serwerowi przetwarzać połączenia tak szybko, jak tylko może, co może powodować problemy na niektórych systemach operacyjnych (takich jak SunOS) i może być nadużywane (szybkie masowe dołączanie clonebotów…), z tych powodów, jeśli zdecydujesz się pozostawić SLOW_ACCEPT niezdefiniowane, MUSISZ zdefiniować CLONE_CHECK.</p>
+<h2 id="clone_check">2.9 CLONE_CHECK</h2>
+<p>Ta opcja jest domyślnie zdefiniowana i działa jako opakowanie, sprawdzając przychodzące połączenia wcześnie przed rozpoczęciem zapytania ident. Domyślnie serwer nie będzie akceptować więcej niż 10 połączeń z tego samego hosta w ciągu 2 sekund.</p>
+<h2 id="inne-defines">2.10 Inne #define’s</h2>
+<p>Reszta zmienialnych przez użytkownika #define’s powinna być raczej samoopisująca się w pliku config.h. <em>NIE</em> jest zalecane zmienianie żadnego z undefiniowanych plików po linii zawierającej „STOP STOP”.</p>
+<h1 id="edycja-pliku-makefile-i-kompilacja">3. Edycja pliku Makefile i kompilacja</h1>
+<p>Ten pakiet używa teraz GNU autoconf do sondowania Twojego systemu i generowania odpowiedniego pliku Makefile. Niemniej jednak, możesz go przeczytać, aby sprawdzić wartości wygenerowane przez skrypt configure. W szczególności, wszystkie nazwy plików i ścieżki do plików binarnych, plików dziennika, plików konfiguracyjnych itp. są tam zdefiniowane. Zaleca się korzystanie z opcji opisanych w sekcji „skrypt configure” zamiast edytować wygenerowany plik Makefile. Niemniej jednak te opcje nie zapewniają pełnej kontroli nad tymi wartościami, w takim przypadku musisz edytować plik Makefile bezpośrednio.</p>
+<p>Aby zbudować pakiet, wpisz „make all”. Jeśli wszystko pójdzie dobrze, możesz go zainstalować, wpisując „make install”.</p>
+<p>Jeśli masz problemy z kompilacją ircd, skopiuj <a href="http://Makefile.in">Makefile.in</a> do Makefile i edytuj plik Makefile odpowiednio.</p>
+<h1 id="plik-ircd.conf">4. Plik ircd.conf</h1>
+<p>Po zainstalowaniu programów ircd i irc, edytuj plik ircd.conf zgodnie z instrukcjami w tej sekcji i zainstaluj go w lokalizacji określonej w pliku config.h. W katalogu doc/ znajduje się przykładowy plik konfiguracyjny o nazwie example.conf.</p>
+<p>Dodatek A (patrz INSTALL.appendix) opisuje różnice między adresami IP a nazwami hostów. Jeśli nie jesteś z tym zaznajomiony, prawdopodobnie powinieneś go przeglądnąć, zanim przejdziesz dalej.</p>
+<p>Plik ircd.conf zawiera różne rekordy określające opcje konfiguracyjne. Typy rekordów są następujące:</p>
+<p>Informacje o maszynie (M)<br>
+Informacje administracyjne (A)<br>
+Połączenia portowe §<br>
+Klasy połączeń (Y)<br>
+Połączenia klienta (I,i)<br>
+Uprawnienia operatora (O,o)<br>
+Wykluczone konta (K,k)<br>
+Połączenia serwera (C,c,N)<br>
+Odmawianie automatycznych połączeń (D)<br>
+Połączenia huba (H)<br>
+Połączenia liścia (L)<br>
+Ograniczenia wersji (V)<br>
+Wykluczone maszyny (Q)<br>
+Połączenia usługowe (S)<br>
+Serwer odbicia (B)<br>
+Z wyjątkiem typów „M” i „A” jest dozwolone mieć wiele rekordów tego samego typu. W niektórych przypadkach można mieć równoczesne rekordy. Ważne jest zaznaczenie, że zostanie użyty ostatni pasujący rekord. Jest to szczególnie przydatne przy konfigurowaniu rekordów I (połączenia klienta).</p>
+<h2 id="informacje-o-maszynie">4.1 Informacje o maszynie</h2>
+<h3 id="wprowadzenie">Wprowadzenie</h3>
+<p>IRC musi poznać kilka rzeczy dotyczących Twojej witryny UNIX, a polecenie „M” określa te informacje dla IRC. Format tego polecenia jest następujący:</p>
+<h3 id="format">Format</h3>
+<p>M::&lt;Twój adres IP Internetowy&gt;:::<br>
+M<br>
+Polecenie „M” określa linię opisującą maszynę.</p>
+<p>Nazwa Serwera<br>
+Nazwa Twojego serwera, dodając ewentualną domenę Internetową, która również może być obecna. Jeśli ta nazwa hosta może być rozwiązana, używany będzie znaleziony adres IP do połączeń wychodzących. W przeciwnym razie używany jest domyślny adres interfejsu hosta. Nazwa serwera nie może być pełną nazwą domenową (FQDN) innego hosta. (Oznacza to, że wszystkie połączenia wychodzące będą wykonywane z tego samego adresu IP, nawet jeśli Twój host ma kilka adresów IP).</p>
+<p>Twój adres IP Internetowy<br>
+Jeśli maszyna, na której uruchamiasz serwer, ma kilka adresów IP, możesz określić, który adres IP ma być używany do połączeń wychodzących. To przesłoni „Nazwę Serwera”.</p>
+<p>Zobacz także sekcje „Połączenia Portowe” i „Połączenia Serwera”.</p>
+<p>Lokalizacja Geograficzna<br>
+Lokalizacja geograficzna jest używana do określenia, GDZIE ZNAJDUJE SIĘ TWÓJ SERWER, i daje ludziom z innych części świata dobry pomysł na Twoje położenie! Jeśli Twój serwer znajduje się w USA, zazwyczaj najlepiej jest powiedzieć:  , USA. Na przykład dla Denver powiedziałbym: „Denver Colorado, USA”. Fińskie witryny (na przykład <a href="http://tolsun.oulu.fi">tolsun.oulu.fi</a>) zazwyczaj podają coś w rodzaju „Oulu, Finlandia”.</p>
+<p>Port<br>
+Określa port, na którym Twój serwer będzie nasłuchiwać na pakiety UDP od innych serwerów. Powinno to być portem, na którym inne serwery są ustawione do automatycznego łączenia. (Zobacz także opis pola portu w liniach połączeń).</p>
+<p>SID<br>
+Określa identyfikator unikalny w sieci Twojego serwera. Musi zaczynać się od cyfry. Musi to być ustawione przy współpracy z innymi administratorami serwerów. Na IRCnet musisz skonsultować się z koordynatorem i/lub administratorami swoich rówieśników.</p>
+<p>Przykład:<br>
+M:tolsun.oulu.fi::Oulu, Finlandia:6667:00PA</p>
+<p>Ta linia oznacza: Nazwa mojego hosta to „<a href="http://tolsun.oulu.fi">tolsun.oulu.fi</a>”, moja witryna znajduje się w „Oulu, Finlandia”, a mój SID to „00PA”.</p>
+<p>M:orion.cair.du.edu::Denver Colorado, USA:6667:00PS</p>
+<p>Ta linia oznacza: Nazwa mojego hosta to „<a href="http://orion.cair.du.edu">orion.cair.du.edu</a>”, moja witryna znajduje się w „Denver Colorado, USA”, a mój SID to „00PS”.</p>
+<h2 id="informacje-administracyjne">4.2 Informacje administracyjne</h2>
+<h3 id="wprowadzenie-1">Wprowadzenie</h3>
+<p>Linia „A” służy do przekazywania informacji administracyjnych o witrynie. Adres e-mail osoby zarządzającej serwerem powinien być zawarty tutaj na wypadek problemów.</p>
+<h3 id="format-1">Format</h3>
+<p>A:&lt;Twoje Imię/Lokalizacja&gt;:&lt;Twój Adres E-Mail&gt;:::<br>
+A<br>
+To określa rekord Administratora.</p>
+<p>Twoje Imię i Lokalizacja<br>
+Użyj tego pola, aby podać swoje PEŁNE IMIĘ i miejsce na świecie, gdzie znajduje się Twoja maszyna. Upewnij się, że dodajesz swoje Miasto, Stan/Prowincję i Kraj.</p>
+<p>Twój Adres Poczty Elektronicznej<br>
+Użyj tego pola, aby podać swój Adres Poczty Elektronicznej, najlepiej Adres Poczty Internetowej. Jeśli masz adres UUCP lub ARAPnet - dodaj go również. Upewnij się, że dodajesz dodatkowe informacje O Domenie, które są potrzebne, na przykład „mail jtrim@orion” prawdopodobnie nie będzie działać jako adres poczty do mnie, jeśli akurat jesteś w Alasce. Ale „mail <a href="mailto:jtrim@orion.cair.du.edu">jtrim@orion.cair.du.edu</a>” zadziała, ponieważ wiesz, że „orion” jest częścią DOMENY „<a href="http://cair.du.edu">cair.du.edu</a>”. Więc upewnij się, że dodajesz DOMENY do swoich adresów pocztowych.</p>
+<p>Inne<br>
+To naprawdę jest pole INNE - możesz dodać, co chcesz.</p>
+<p>Nazwa sieci<br>
+Użyj tego pola, aby ogłosić nazwę swojej sieci w numerach 005. Użyj tylko jednego słowa!</p>
+<p>Przykład<br>
+(linia jest tylko jedną linią w pliku konfiguracyjnym, tutaj jest podzielona na dwie linie, aby była czytelniejsza):</p>
+<p>A:Jeff Trim - Denver Colorado, USA:INET <a href="mailto:jtrim@orion.cair.du.edu">jtrim@orion.cair.du.edu</a> UUCP {hao,isis}!udenva!jtrim:Terve! Heippa! Have you said hello in Finnish today?;)::IRCnet</p>
+<p>Wyglądałoby to tak, gdyby zostało wydrukowane za pomocą polecenia /admin:</p>
+<p>Jeff Trim - Denver Colorado, USA INET <a href="mailto:jtrim@orion.cair.du.edu">jtrim@orion.cair.du.edu</a> UUCP {hao,isis}!udenva!jtrim Terve! Hei! Heippa! Have you said hello in Finnish today? ;)</p>
+<p>Należy zauważyć, że rekord A nie może być podzielony na wiele linii; zazwyczaj będzie dłuższy niż 80 znaków i dlatego zawija się na ekranie.</p>
+<h2 id="połączenia-portowe">4.3 Połączenia Portowe</h2>
+<h3 id="wprowadzenie-2">Wprowadzenie</h3>
+<p>Linia portowa dodaje serwerowi elastyczność w akceptowaniu połączeń. Poprzez użycie tej linii w pliku ircd.conf, można łatwo skonfigurować, na których portach serwer będzie nasłuchiwał na przychodzące połączenia. Obejmuje to zarówno porty internetowe, które obsługują połączenia przez sieć, jak i porty domeny Unix, które umożliwiają połączenia wewnątrz jednego komputera.</p>
+<h3 id="format-2">Format</h3>
+<p>P::&lt;<em>&gt;:::<br>
+P::&lt;</em>&gt;:&lt;*&gt;::<br>
+Porty Internetowe<br>
+Adres IP Internetowy<br>
+Jeśli komputer, na którym działa serwer, ma wiele adresów IP, możesz określić, który z tych adresów IP zostanie użyty do nasłuchiwania na przychodzące połączenia. Jeśli to pole pozostaje puste, serwer będzie nasłuchiwał na wszystkich dostępnych interfejsach sieciowych. To przydaje się, gdy serwer musi słuchać na wielu adresach IP na jednym komputerze. Patrz także na konfigurację maszyny i sekcje dotyczące połączeń serwera, aby odpowiednio skonfigurować wychodzące połączenia.</p>
+<p>Przykład:<br>
+P:192.168.1.194:::6664:</p>
+<p>Port<br>
+To pole określa numer portu, na którym serwer będzie oczekiwał na przychodzące połączenia. Porty to numery, które identyfikują konkretne usługi na komputerze. Na przykład, port 80 jest zwykle używany do obsługi stron internetowych (HTTP).</p>
+<p>Porty Gniazda Unix<br>
+Katalog<br>
+Ścieżka podana w tym polu powinna być nazwą katalogu, w którym zostanie utworzone gniazdo Unix do nasłuchiwania na połączenia. Gniazdo Unix to rodzaj komunikacji międzyprocesowej na jednym komputerze. Serwer spróbuje utworzyć ten katalog przed utworzeniem gniazda Unix.</p>
+<p>Port<br>
+Pole portu, gdy jest używane w połączeniu z ścieżką w linii P, jest nazwą pliku, który zostanie utworzony w katalogu podanym w pierwszym polu.</p>
+<p>Przykład:<br>
+P:/tmp/.ircd:::6667:</p>
+<p>Ten przykład tworzy gniazdo Unix o nazwie „6667” w katalogu /tmp/.ircd. Gniazdo Unix to plik używany do komunikacji między różnymi procesami na tym samym komputerze.</p>
+<p>Uwaga<br>
+Aby uruchomić serwer, musisz mieć co najmniej jedną linię P określającą port, na którym serwer ma nasłuchiwać na połączenia. Jeśli jednak uruchamiasz serwer z poziomu usługi inetd (Internet Super Server), nie jest wymagane posiadanie własnej linii P w pliku konfiguracyjnym.</p>
+<h2 id="klasy-połączeń">4.4 Klasy Połączeń</h2>
+<h3 id="wprowadzenie-3">Wprowadzenie</h3>
+<p>Aby umożliwić bardziej efektywne wykorzystanie MAXIMUM_LINKS, wprowadzono klasy połączeń. Wszystkie klienty należą do konkretnej klasy połączeń.</p>
+<p>Każda linia dotycząca serwera powinna mieć taki sam numer jak szóste pole. Jeśli to pole jest pominięte, serwer domyślnie ustawia je na 0, korzystając z wartości domyślnych z pliku config.h.</p>
+<p>Aby zdefiniować klasę połączeń, musisz zawrzeć linię Y: w pliku ircd.conf. Pozwala to zdefiniować częstotliwość pingowania, częstotliwość prób połączenia (dla serwerów) i maksymalną liczbę połączeń, które ta klasa może mieć.</p>
+<p>Obecnie linia Y: MUSI pojawić się w pliku ircd.conf PRZED jej użyciem w jakikolwiek inny sposób.</p>
+<h3 id="format-3">Format</h3>
+<p>Y::&lt;Częstotliwość Ping&gt;:&lt;Częstotliwość Połączenia&gt;:&lt;Maksymalne Połączenia&gt;:::<br>
+Y<br>
+To określa rekord klasy.</p>
+<p>Klasa<br>
+To numer klasy, który uzyskuje następujące atrybuty i powinien pasować do tego, który jest na końcu linii C/c/N/I/O/S.</p>
+<p>Częstotliwość Ping<br>
+To pole określa, jak długo serwer pozwoli połączeniu pozostać “w milczeniu”, zanim wyśle komunikat PING, aby upewnić się, że jest nadal aktywne. Chyba że jesteś pewien, co robisz, użyj wartości domyślnej, która znajduje się w pliku config.h.</p>
+<p>Częstotliwość Połączenia<br>
+Zmieniając tę liczbę, zmieniasz, jak często Twój serwer sprawdza, czy może połączyć się z tym serwerem. Jeśli chcesz sprawdzać bardzo rzadko, użyj dużej wartości, ale jeśli to ważne połączenie, możesz chcieć mniejszej wartości, aby automatycznie się do niego podłączyć tak szybko, jak to możliwe.</p>
+<p>Maksymalne Połączenia<br>
+To pole określa maksymalną liczbę połączeń, które ta klasa pozwoli z automatycznych połączeń (linie C). Użycie /CONNECT jest nadrzędne wobec tego ustawienia. Określa również maksymalną liczbę użytkowników w tej klasie dla linii I/O na jednej linii I/O.</p>
+<p>SendQ<br>
+To pole określa wartość “SendQ” dla tej klasy. Jeśli tego pola nie ma, przydzielana jest wartość domyślna (z config.h).</p>
+<p>Limit Lokalny<br>
+To pole służy do ograniczenia liczby jednoczesnych lokalnych połączeń. Format to .</p>
+<p>x: określa maksymalną liczbę klientów z tego samego hosta (IP), którzy będą akceptowani.<br>
+y: określa maksymalną liczbę klientów z tego samego użytkownika@hosta (IP), którzy będą akceptowani. Przeczytaj poniższą uwagę.<br>
+Domyślnie nieustawiona wartość przyjmuje wartość 1 (jeden).<br>
+Limit Globalny<br>
+To pole ma takie samo zastosowanie jak pole “Limit Lokalny”. Jednak liczba połączeń jest obliczana dla wszystkich klientów obecnych w sieci, a nie tylko dla lokalnych klientów.</p>
+<p>Uwaga<br>
+Pominięcie dowolnych pól (za wyjątkiem SendQ i limitów) oznacza, że ich wartość wynosi 0 (ZERO)! Domyślna wartość pola SendQ jest dynamicznie ustalana. Limity domyślnie wynoszą 1.1 (jedno połączenie).</p>
+<p>Uwaga<br>
+Jeśli planujesz korzystać z lokalnego ograniczenia użytkownika@hosta, przeczytaj poniższy tekst bardzo uważnie. Wartość “user” to odpowiedź identyfikatora dla połączenia. Jeśli nie podano odpowiedzi, domyślnie przyjmuje ona “unknown”, co oznacza, że efektywne ograniczenie będzie dotyczyć hosta, a nie użytkownika@hosta. Ponadto niektóre serwery identyfikujące zwracają zaszyfrowane dane, które zmieniają się przy każdym połączeniu, co sprawia, że ograniczenie jest nieważne.</p>
+<p>Uwaga<br>
+Tylko ograniczenie lokalne jest dokładne.</p>
+<p>Uwaga<br>
+Jeśli zdefiniujesz limit globalny, powinieneś również zdefiniować limit lokalny (taki sam lub niższy), ponieważ nie spowoduje to dodatkowego zużycia CPU i bardziej dokładnie określi limit globalny.</p>
+<p>Uwaga<br>
+Limity lokalne i globalne dotyczą tylko użytkowników (linie I), nie serwerów ani usług.</p>
+<h3 id="przykład">Przykład</h3>
+<p>Y:23:120:300:5:800000:0:0: (klasa serwera)</p>
+<p>To definiuje klasę 23, która pozwala na 5 automatycznych połączeń, które są sprawdzane co 300 sekund. Połączenie może pozostawać w milczeniu przez 120 sekund, zanim zostanie wysłane PING. UWAGA: pola 3 i 4 są w sekundach. SendQ jest ustawione na 800000 bajtów.</p>
+<p>Y:1:60:0:50:20000:2:5: (klasa klienta)</p>
+<p>W przypadku klasy klienta pola są interpretowane nieco inaczej. Ta klasa (numer 1) może być używana przez maksymalnie 50 użytkowników. Połączenia mogą pozostawać w milczeniu przez 60 sekund, zanim zostanie wysłany PING. SendQ jest ustawione na 20000 bajtów. Nowe połączenie w tej klasie będzie dozwolone tylko wtedy, gdy nie będzie więcej niż 2 inne lokalne połączenia z tego samego adresu IP lub więcej niż 5 innych połączeń w sieci z tej samej nazwy hosta.</p>
+<p>Y:2:60:0:50:20000:2.1:5: (klasa klienta)</p>
+<p>W przypadku klasy klienta pola są interpretowane nieco inaczej. Ta klasa (numer 1) może być używana przez maksymalnie 50 użytkowników. Połączenia mogą pozostawać w milczeniu przez 60 sekund, zanim zostanie wysłany PING. SendQ jest ustawione na 20000 bajtów. Nowe połączenie w tej klasie będzie dozwolone tylko wtedy, gdy nie będzie więcej niż 2 inne lokalne połączenia z tego samego adresu IP, 1 lokalne połączenie od tego samego użytkownika z tego samego adresu IP lub więcej niż 5 innych połączeń w sieci z tej samej nazwy hosta.</p>
+<h2 id="połączenia-klientów">4.5 Połączenia klientów</h2>
+<p>Jak umożliwić klientom podłączanie się do twojego IRCD.</p>
+<h3 id="wprowadzenie-4">Wprowadzenie</h3>
+<p>Klientem jest program, który łączy się z demonem ircd (ircd). Istnieją klienty napisane w C, GNU Emacs Lisp i wielu innych językach. Program “irc” to klient w języku C. Każda osoba, która rozmawia za pośrednictwem IRC, korzysta z własnego klienta.</p>
+<p>Plik ircd.conf zawiera wpisy, które określają, które klienty mogą podłączać się do twojego demona IRC. Oczywiście chcesz, aby klienty z twojej własnej maszyny mogły się podłączać. Możesz też chcieć pozwolić klientom z innych witryn na podłączanie się. Te zdalne klienty będą korzystać z twojego serwera jako punktu połączenia. Wszystkie wiadomości wysyłane przez tych klientów będą przechodzić przez twoją maszynę.</p>
+<h3 id="format-4">Format</h3>
+<p>I::&lt;Hasło&gt;:&lt;Nazwa docelowych hostów&gt;:::<br>
+Uwaga<br>
+Małe “i” jest równe flaga “R” w przypadku “I”.</p>
+<p>Adres docelowy hosta<br>
+Określa adres IP maszyny(-) uprawnionej(-ych) do podłączania. Jeśli przed rzeczywistym adresem IP pojawi się prefiks “user@”, serwer wymaga, aby nazwa użytkownika zdalnego, zwracana przez serwer ident, była taka sama jak ta, która została podana przed znakiem “@”. Dozwolone są symbole wieloznaczne, chyba że używany jest maska bitowa (np. 1.2.3.0/24). Maska bitowa jest zalecana zamiast symboli wieloznacznych, ponieważ jest bardziej dokładna.</p>
+<p>Hasło<br>
+Hasło, które musi być podane przez klienta, aby zostać dopuszczonym do serwera.</p>
+<p>Nazwa docelowych hostów<br>
+Określa nazwę hosta(-ów) maszyn, które mają prawo łączyć się z serwerem. Jeśli przed rzeczywistym adresem IP pojawi się prefiks “user@”, serwer wymaga, aby nazwa użytkownika zdalnego, zwracana przez serwer ident, była taka sama jak ta, która została podana przed znakiem “@”. Dozwolone są symbole wieloznaczne, ale lepiej pozostawić to pole puste i użyć maski bitowej w polu Adres Hosta.</p>
+<p>To pole może być puste, ma wówczas specjalne znaczenie. Patrz poniżej.</p>
+<p>Użycie tego pola do wymuszenia braku ustawionej nazwy hosta klienta jest przestarzałe, patrz flaga “N”.</p>
+<p>Port<br>
+Określa numer portu, dla którego ta linia konfiguracji jest ważna. Puste pole lub “0” pasuje do wszystkich portów.</p>
+<p>Klasa<br>
+To pole powinno odnosić się do istniejącej klasy. Klasy połączeń są przydatne do ograniczenia liczby użytkowników dopuszczonych na serwerze.</p>
+<p>Flagi<br>
+To pole zawiera flagi linii I:; flagi mają rozmiar jednego znaku, mogą być łączone i ich kolejność nie ma znaczenia.</p>
+<p>R - ograniczone<br>
+D - ograniczone, gdy klient nie ma odwrotnego DNS<br>
+I - ograniczone, gdy klient nie ma identyfikatora.<br>
+E - klient jest zwolniony z linii K:<br>
+N - nie pokazuj rozwiązanej nazwy hosta (zakazy nadal pasują)<br>
+F - przejdź do kolejnej linii I:, jeśli hasło nie zostanie dopasowane<br>
+Uwaga<br>
+Ograniczona linia I: oznacza, że ​​klienci pasujący do takiej linii I nie będą mogli korzystać z uprawnień operatora (brak zmiany nicku/mode, brak wyrzucania). Tacy użytkownicy będą mieli swoją nazwę użytkownika poprzedzoną +, = lub -, w zależności od odpowiedzi identyfikatora.</p>
+<p>Uwaga<br>
+Serwer najpierw sprawdza, czy nazwa hosta klienta (lub dowolne aliasy) pasuje do pola Nazwa Hosta docelowego. Jeśli zostanie znalezione dopasowanie, klient zostanie zaakceptowany. Jeśli nie, serwer sprawdza, czy adres IP klienta pasuje do pola Adres Hosta docelowego. Pasujące pole jest używane do ustawienia nazwy klienta: na przykład, jeśli klient pasuje do pola Adres Hosta docelowego, zostanie wyświetlony na IRC z adresem numerycznym (nawet jeśli ten adres jest rozpoznawalny). Jeśli pole Nazwa Hosta docelowego jest puste, zawsze używana jest nazwa hosta (jeśli jest dostępna).</p>
+<h3 id="przykłady">Przykłady</h3>
+<p>Na przykład, jeśli instalujesz IRC na <a href="http://tolsun.oulu.fi">tolsun.oulu.fi</a> i chcesz pozwolić na przykład na to, żebyśmy przyjęli, że tworzysz ten plik dla tolsun i chcesz, aby Twoi własni klienci mogli łączyć się z Twoim serwerem, możesz dodać ten wpis do pliku:</p>
+<p>I:::tolsun.oulu.fi::1</p>
+<p>Jeśli chciałbyś pozwolić zdalnym klientom na łączenie się, możesz dodać następujące linie:</p>
+<p>I:::*.edu.edu::1</p>
+<p>Zezwalaj na łączenie się z dowolnymi klientami z maszyn, których nazwy kończą się na “.edu.edu”, bez hasła.</p>
+<p>I:128.214.6.100::nic.funet.fi::1</p>
+<p>Zezwalaj na łączenie się klientom z maszyny o tym numerze IP. Dopasowanie numeryczne jest wystarczające, nie jest już wymagana nazwa.</p>
+<p>I:㊙️*.tut.fi::1</p>
+<p>Zezwalaj na łączenie się klientom z maszyn pasujących do “*.tut.fi” za pomocą hasła “secret”.</p>
+<p>I:::*::1</p>
+<p>Zezwalaj każdemu z dowolnego miejsca na łączenie się z twoim serwerem.</p>
+<p>Jest to najprostszy sposób, ale pozwala to również ludziom na przykład na zrzucanie plików na Twój serwer lub na łączenie się z tysiącem (lub ile połączeń na proces pozwala Twój system operacyjny) klientów na Twoją maszynę i zajmowanie portów sieci. Oczywiście te same rzeczy można zrobić, po prostu telnetując na port SMTP Twojej maszyny (na przykład).</p>
+<p>I:::*.fi:6667:1</p>
+<p>Zezwalaj na łączenie się klientom z maszyn pasujących do “*.fi” na porcie 6667.</p>
+<p>I:135.11.35.0/24::*.net::1</p>
+<p>Zezwala klientom z maszyn, których nazwa hosta pasuje do “<em>.net" lub których adres IP znajduje się w bloku “135.11.35.0/24”, na łączenie się z serwerem. Jeśli nazwa hosta nie pasuje do "</em>.net”, to dla tych klientów używany jest adres IP, nawet jeśli nazwa hosta jest znana.</p>
+<p>I:135.11.35.0/24::::1</p>
+<p>Zezwala klientom z maszyn, których adres IP znajduje się w bloku “135.11.35.0/24”, na łączenie się z serwerem. Jeśli nazwa hosta jest znana, jest ona używana jako adres dla tych klientów.</p>
+<p>tag/NEW!!!/ Od wersji 2.11.0 serwera wprowadzono flagi linii I:.</p>
+<h2 id="uprawnienia-operatora">4.6 Uprawnienia operatora</h2>
+<p>Jak stać się administratorem IRC na swojej witrynie</p>
+<h3 id="wprowadzenie-5">Wprowadzenie</h3>
+<p>Aby stać się administratorem IRC, IRC musi wiedzieć, kto jest upoważniony do zostania operatorem i jakie są ich “Nick” i “Hasło”.</p>
+<h3 id="format-5">Format</h3>
+<p>O::&lt;Hasło&gt;:::<br>
+O<br>
+Określa rekord operatora.</p>
+<p>Uwaga<br>
+Jeśli używasz małej litery (“o”), oznacza to operatora globalnego. Wielka litera (“O”) oznacza operatora lokalnego. Operator lokalny ma praktycznie te same uprawnienia co operator globalny, ale z pewnymi ograniczeniami.</p>
+<p>Nazwa Hosta DOCELOWEGO<br>
+Informuje IRC, z którego hosta masz uprawnienia. Oznacza to, że powinieneś być zalogowany na tym hoście, kiedy ubiegasz się o uprawnienia operatora. Jeśli określisz “<a href="http://tolsun.oulu.fi">tolsun.oulu.fi</a>”, to IRC będzie oczekiwać, że twój KLIJENT będzie podłączony do “<a href="http://tolsun.oulu.fi">tolsun.oulu.fi</a>” - kiedy ubiegasz się o UPRAWNIENIA OPERATORA z “<a href="http://tolsun.oulu.fi">tolsun.oulu.fi</a>”. Nie możesz być zalogowany na żadnym innym hoście i nie można używać UPRAWNIEN OPERATORA w tolsun, tylko wtedy, gdy jesteś podłączony do TOLSUN - jest to zabezpieczenie przed nieupoważnionymi witrynami.</p>
+<p>Hasło<br>
+To jest twoje HASŁO AUTORYZACJI - to hasło informuje IRC, kim jesteś! Nigdy nie podawaj nikomu swojego hasła i zawsze zabezpiecz plik “ircd.conf” przed dostępem wszystkich innych użytkowników.</p>
+<p>Nick<br>
+Twój zazwyczaj używany pseudonim - ale możesz to ustawić na co chcesz.</p>
+<p>Port<br>
+Nie używany.</p>
+<p>Klasa<br>
+Pole klasy powinno odnosić się do istniejącej klasy (najlepiej o niższym numerze niż dla odpowiedniej linii I) i określa maksymalną liczbę jednoczesnych użyczeń linii O dozwoloną przez pole max. połączeń w linii Y.</p>
+<h3 id="przykład-1">Przykład</h3>
+<p>o:orion.cair.du.edu:pyunxc:Jeff::1</p>
+<p>Jest OPERATOR na “<a href="http://orion.cair.du.edu">orion.cair.du.edu</a>”, który może uzyskać uprawnienia operatora, jeśli poda hasło “pyunxc” i używa NICKNAME “Jeff”.</p>
+<p>Uwaga<br>
+Nazwa HOSTA akceptuje maski bitowe IP.</p>
+<h2 id="wykluczone-konta">4.7 Wykluczone konta</h2>
+<p>Usuń niepożądanego użytkownika z IRC na swojej stronie.</p>
+<h3 id="wprowadzenie-6">Wprowadzenie</h3>
+<p>Oczywiście, miejmy nadzieję, że nie będziesz musiał korzystać z tego polecenia. Niestety czasami użytkownik może stać się trudny do zarządzania, i to jest twoje jedyne rozwiązanie - polecenie KILL USER. TO POLECENIE DOTYCZY TYLKO TWOJEGO SERWERA - Jeśli ten użytkownik może połączyć się z innym SERWEREM gdziekolwiek indziej w sieci IRC, to musiałbyś skontaktować się z administratorem na tej stronie, aby wyłączyć dostęp z tego SERWERA IRCD.</p>
+<h3 id="format-6">Format</h3>
+<p>K::&lt;okres czasu (y)|komentarz&gt;:&lt;Użytkownik&gt;::<br>
+k::&lt;okres czasu (y)|komentarz&gt;:::<br>
+K<br>
+“K” informuje IRCD, że tworzysz wpis polecenia KILL USER.</p>
+<p>Nazwa Hosta<br>
+W tym polu określasz Nazwę hosta lub adres IP (pojedynczy adres IP, notacja zastępcza lub notacja maski bitowej), z którego użytkownik się łączy. Jeśli chcesz USUNĄĆ połączenia z IRC z “<a href="http://orion.cair.du.edu">orion.cair.du.edu</a>”, to wpisz “<a href="http://orion.cair.du.edu">orion.cair.du.edu</a>”. Jeśli chcesz USUNĄĆ DOSTĘP DO WSZYSTKICH HOSTÓW, możesz użyć “*” (notacja zastępcza) i niezależnie od hosta, z którego UŻYTKOWNIK (określony w polu 4) się łączy, zostanie mu odmówiony dostęp.</p>
+<p>Jeśli określisz adres IP, maskę IP lub maskę bitową IP, dopasuje to klientów łączących się z pasujących adresów, niezależnie od tego, czy są rozwiązywane, czy nie.</p>
+<p>Możesz przedstawić adres IP, maskę IP lub maskę bitową IP jako “=” w przypadku, gdy dopasowywane są tylko pasujące nie rozwiązywane hosty.</p>
+<p>okres czasu (y)|komentarz<br>
+Albo pozostaw to pole puste, albo dodaj komentarz, a następnie linia jest aktywna ciągle dla określonego użytkownika/hosta. Możesz także określić interwały, w których linia ma być aktywna, patrz przykłady poniżej.</p>
+<p>Użytkownik<br>
+NICK użytkownika, którego chcesz usunąć z IRC. Na przykład “root”.</p>
+<p>Autoryzacja<br>
+Jeśli serwer identyfikacyjny użytkownika odpowiada typem INNYM (w przeciwieństwie do typu UNIX), odpowiedź nie jest używana do ustawienia nazwy użytkownika. (małe litery) linie k mogą być używane w tych przypadkach do odrzucenia użytkowników na podstawie odpowiedzi identyfikacyjnej.</p>
+<p>To pole będzie porównywane z odpowiedzią serwera identyfikacyjnego. Ważne jest zauważyć, że odpowiedzi INNE są poprzedzone “-” przez ircd, podczas gdy odpowiedzi UNIX nie są.</p>
+<p>Port<br>
+Port, na którym linia Kill będzie działać. 0 oznacza wszystkie porty.</p>
+<h3 id="przykłady-1">Przykłady</h3>
+<p>K:orion.cair.du.edu::jtrim:0:</p>
+<p>Jeśli użytkownik “jtrim” łączy się z IRC z hosta “<a href="http://orion.cair.du.edu">orion.cair.du.edu</a>”, NATYCHMIAST GO USUŃ z mojego IRCD.</p>
+<p>k:*.stealth.net::-43589:0:</p>
+<p>Jeśli użytkownik łączy się z dowolnego hosta, który ma sufiks “<a href="http://stealth.net">stealth.net</a>” i jeśli identyfikacyjny serwer tego hosta zwraca “-43589” - NATYCHMIAST GO USUŃ z mojego IRCD.</p>
+<p>K:*.cair.du.edu::root:0:</p>
+<p>Jeśli użytkownik “root” łączy się z IRC z dowolnego hosta, który ma sufiks “<a href="http://cair.du.edu">cair.du.edu</a>” - NATYCHMIAST GO USUŃ z mojego IRCD.</p>
+<p>K:*::vijay:0:</p>
+<p>Ta linia oznacza “NIE DBAM O TO, NA JAKIM HOŚCIE jest użytkownik “vijay”, NIGDY nie pozwolę użytkownikowi “vijay” na zalogowanie się na mój IRCD.”</p>
+<p>K:<em>.oulu.fi:0800-1200,1400-1900:</em>:0:</p>
+<p>To zabrania wszystkim użytkownikom z hostów z końcówką “<a href="http://oulu.fi">oulu.fi</a>” dostępu do twojego serwera między 8 a 12 rano oraz między 14 a 19 po południu. Użytkownicy zostaną wylogowani, jeśli są już zalogowani, gdy linia stanie się aktywna (otrzymają ostrzeżenie 5 minut wcześniej). Należy zauważyć, że wymaga to, aby ircd był skompilowany z odpowiednim #define!</p>
+<p>K:192.11.35.0/24::*:0:</p>
+<p>Ta linia zabrania wszystkim hostom, których adres IP jest z sieci “192.11.35.0/24”, logowanie się na ircd.</p>
+<p>K:=192.11.35.0/24::*:0:</p>
+<p>Ta linia zabrania wszystkim hostom, których adres IP jest z sieci “192.11.35.0/24” i które nie zostały rozwiązane, aby zalogować się na ircd.</p>
+<h2 id="połączenia-serwerowe">4.8 Połączenia serwerowe</h2>
+<p>Jak łączyć się z innymi serwerami, jak inne serwery mogą się z Tobą łączyć</p>
+<p>OSTRZEŻENIE: Używane jako przykłady nazwy hostów są tylko przykładami i nie są przeznaczone do użycia (po prostu dlatego, że nie działają) w życiu rzeczywistym.</p>
+<p>Teraz musisz zdecydować, Z KTÓRYMI hostami chcesz się połączyć i W JAKIEJ KOLEJNOŚCI chcesz się z nimi połączyć. W moim przykładzie załóżmy, że jestem na maszynie “<a href="http://rieska.oulu.fi">rieska.oulu.fi</a>” i chcę połączyć się z demonami IRC na 3 innych maszynach:</p>
+<p><code>garfield.mit.edu'' - Połączenie trzeciorzędne</code><a href="http://irc.nada.kth.se">irc.nada.kth.se</a>’’ - Połączenie wtórne<br>
+<code>nic.funet.fi'' - Połączenie pierwotne I preferuję połączenie z nimi w tej kolejności, oznacza to, że chcę najpierw spróbować połączyć się z</code><a href="http://nic.funet.fi">nic.funet.fi</a>’’, następnie z <code>irc.nada.kth.edu'' i na końcu z</code><a href="http://garfield.mit.edu">garfield.mit.edu</a>’’. Więc jeśli <code>nic.funet.fi'' jest wyłączony lub nieosiągalny, program spróbuje połączyć się z</code><a href="http://irc.nada.kth.se">irc.nada.kth.se</a>’’. Jeśli <a href="http://irc.nada.kth.se">irc.nada.kth.se</a> jest wyłączony, spróbuje połączyć się z garfieldem, i tak dalej.</p>
+<p>PROSZĘ OGRANICZ liczbę hostów, do których będziesz próbował się połączyć, do 3. Ma to dwa główne powody:</p>
+<ol>
+<li>aby oszczędzić swój serwer od dodatkowego obciążenia i opóźnień dla użytkowników</li>
+<li>aby zaoszczędzić ruch sieciowy w internecie (pamiętaj o starym programie rwho, który miał problemy z ruchem sieciowym, gdy liczba maszyn wzrosła).</li>
+</ol>
+<h3 id="format-7">Format</h3>
+<p>C::&lt;Hasło&gt;::::&lt;Źródło IP&gt;<br>
+na przykład:</p>
+<p>C:nic.funet.fi:hasło:nic.funet.fi:6667:1</p>
+<ul>
+<li>lub -</li>
+</ul>
+<p>C:128.214.6.100:hasło:nic.funet.fi:6667:1</p>
+<ul>
+<li>lub -</li>
+</ul>
+<p><a href="mailto:C:root@nic.funet.fi">C:root@nic.funet.fi</a>:hasło:nic.funet.fi:6667:1</p>
+<p>C<br>
+To pole informuje program IRC, którą opcję konfigurujesz. “C” odpowiada opcji połączenia serwera.</p>
+<p>Adres Hosta DOCelowego<br>
+Określa nazwę hosta lub adres IP maszyny, do której ma się połączyć. Jeśli ``user@’’ jest przed rzeczywistą nazwą hosta lub adresem IP, serwer będzie wymagać, aby zdalna nazwa użytkownika zwracana przez serwer identyfikacyjny była taka sama, jak ta podana przed “@”</p>
+<p>Hasło<br>
+Hasło do innego hosta. Hasło musi zawsze być obecne, aby linia została rozpoznana.</p>
+<p>Nazwa Hosta DOCelowego<br>
+Pełna nazwa hosta maszyny docelowej. To jest nazwa, którą SERWER DOCELU zidentyfikuje się, gdy się z nim połączysz. Jeśli łączysz się z <a href="http://nic.funet.fi">nic.funet.fi</a>, otrzymasz “<a href="http://nic.funet.fi">nic.funet.fi</a>”, i to właśnie powinieneś umieścić w tym polu.</p>
+<p>Port DOCELU<br>
+Port INTERNETOWY, do którego chcesz się połączyć na maszynie DOCELU. Większość czasu zostanie ustawione na “6667”. Jeśli to pole jest pozostawione puste, to nie będą podejmowane próby połączenia z hostem DOCELU, a Twój host będzie akceptował połączenia OD hosta DOCELU. Pole portu może zawierać 2 porty, oddzielone kropką. W tym przypadku pierwszy port jest używany podczas automatycznego łączenia, a drugi port jest używany do pingów UDP do serwera docelowego.</p>
+<p>Klasa<br>
+Pole klasy powinno odnosić się do istniejącej klasy i określa maksymalną liczbę jednoczesnych użyć linii C dozwolonych za pośrednictwem pola max. links w linii Y.</p>
+<p>Źródło IP<br>
+To pole określa źródłowy adres IP, który ma być używany do łączenia się z tym serwerem.</p>
+<p>NOWOŚĆ!!!<br>
+Od wersji serwera 2.9.3 połączenia serwerowe mogą być kompresowane za pomocą biblioteki zlib. Aby zdefiniować połączenie skompresowane, musisz skompilować serwer z zdefiniowanym ZIP_LINKS i używać linii C z małymi literami.</p>
+<p>NOWOŚĆ!!!<br>
+Od wersji serwera 2.11.0 dodano pole Źródło IP.</p>
+<p>PRZYKŁADY:</p>
+<p>C:nic.funet.fi::nic.funet.fi:6667:1<br>
+To oznacza: Połącz się z hostem “<a href="http://nic.funet.fi">nic.funet.fi</a>”, bez hasła, i oczekuj, że ten serwer zidentyfikuje się jako “<a href="http://nic.funet.fi">nic.funet.fi</a>”. Twój serwer połączy się z tym hostem na porcie 6667.</p>
+<p>C:18.72.0.252:Jeff:garfield.mit.edu:6667:1:192.168.0.18<br>
+To oznacza: Połącz się z hostem o adresie “18.72.0.252”, używając hasła “Jeff”. Serwer DOCELOWY powinien zidentyfikować się jako “<a href="http://garfield.mit.edu">garfield.mit.edu</a>”. Połączysz się z portem internetowym 6667 na tym hoście. To połączenie będzie używać źródłowego adresu IP “192.168.0.18”.</p>
+<p>C:irc.nada.kth.se::irc.nada.kth.se:1<br>
+To oznacza: nie próbuj automatycznie łączyć się z “<a href="http://irc.nada.kth.se">irc.nada.kth.se</a>”, ale jeśli “<a href="http://irc.nada.kth.se">irc.nada.kth.se</a>” zażąda połączenia, zezwól mu się połączyć.</p>
+<p>Teraz wracając do naszego pierwotnego problemu, chcieliśmy, żeby NASZ serwer POŁĄCZYŁ się z 3 hostami: “<a href="http://nic.funet.fi">nic.funet.fi</a>”, “<a href="http://irc.nada.kth.se">irc.nada.kth.se</a>” i “<a href="http://garfield.mit.edu">garfield.mit.edu</a>” w tej kolejności. Dlatego, gdy wprowadzamy te wpisy do pliku, muszą być one zrobione odwrotnie, w kolejności odwrotnej do tego, w jakiej chcielibyśmy się z nimi połączyć.</p>
+<p>Oto, jak to wyglądałoby, gdybyśmy najpierw połączyli się z “<a href="http://nic.funet.fi">nic.funet.fi</a>”:</p>
+<p>C:garfield.mit.edu::garfield.mit.edu:6667:1 C:irc.nada.kth.se::irc.nada.kth.se:6667:1 C:nic.funet.fi::nic.funet.fi:6667:1</p>
+<p>Ircd spróbuje najpierw połączyć się z <a href="http://nic.funet.fi">nic.funet.fi</a>, a następnie z irc.nada i na końcu z garfield.</p>
+<p>Wpisy wzajemne: Każdy wpis “C” wymaga odpowiadającego mu wpisu “N”, który określa uprawnienia do połączeń z innymi hostami. Wpis “N” zawiera hasło, jeśli jest wymagane, aby inne hosty mogły się z Tobą połączyć. Te wpisy mają ten sam format co wpisy “C”.</p>
+<p>FORMAT<br>
+Format wpisu “NOCONNECT” w pliku “ircd.conf” wygląda następująco:</p>
+<p>N::&lt;Hasło&gt;:::<br>
+Załóżmy, że “<a href="http://garfield.mit.edu">garfield.mit.edu</a>” łączy się z Twoim serwerem, a Ty chcesz umieścić uwierzytelnienie hasłem na “garfield”. Wpis “N” wyglądałby tak:</p>
+<p>N:garfield.mit.edu:golden:garfield.mit.edu::</p>
+<p>Ten wpis mówi: oczekuj połączenia od hosta “<a href="http://garfield.mit.edu">garfield.mit.edu</a>”, oczekuj hasła logowania “golden”, a host powinien zidentyfikować się jako “<a href="http://garfield.mit.edu">garfield.mit.edu</a>”.</p>
+<p>N:18.72.0.252::garfield.mit.edu::</p>
+<p>Ten wpis mówi: oczekuj połączenia od hosta “18.72.0.252”, nie oczekuj hasła logowania. Łączący host powinien zidentyfikować się jako “<a href="http://garfield.mit.edu">garfield.mit.edu</a>”.</p>
+<p>N<br>
+"Pole “N” odpowiada opcji Noconnect serwera.</p>
+<p>Adres Hosta DOCELOWEGO<br>
+Określa nazwę hosta lub adres IP maszyny, z którą chcesz się połączyć. Jeśli przed rzeczywistą nazwą hosta lub adresem IP pojawi się “user@”, serwer będzie wymagać, aby zdalna nazwa użytkownika zwracana przez serwer identyfikacyjny była taka sama jak ta podana przed “@”.</p>
+<p>Hasło<br>
+Hasło innego hosta. Hasło musi zawsze być obecne, aby linia została rozpoznana. Jeśli w pliku config.h zdefiniowano CRYPT_LINK_PASSWORD, to hasło musi być zaszyfrowane.</p>
+<p>Nazwa Hosta DOCELOWEGO<br>
+Pełna nazwa hosta maszyny docelowej. To jest nazwa, którą serwer DOCELOWY zidentyfikuje się, gdy się z nim połączysz. Jeśli łączysz się z <a href="http://nic.funet.fi">nic.funet.fi</a>, otrzymasz “<a href="http://nic.funet.fi">nic.funet.fi</a>”, i to właśnie powinieneś umieścić w tym polu.</p>
+<p>Maska Domeny<br>
+Maska domeny, patrz niżej.</p>
+<p>Klasa<br>
+Pole klasy powinno odnosić się do istniejącej klasy.</p>
+<p>Maski domen<br>
+Aby zmniejszyć liczbę serwerów na IRCnet, wprowadzono maski DOMEN od wersji 2.6. Aby wyjaśnić użycie masek domen, weźmy na przykład taką:</p>
+<p>*.de - maska domeny dopasowująca wszystkie maszyny w Niemczech.</p>
+<p>Maski domen są przydatne, ponieważ WSZYSTKIE SERWERY w Niemczech (lub w innych obszarach domen) mogą być prezentowane jako jeden dla reszty świata. Wyobraź sobie 100 serwerów w Niemczech, to byłby niesamowity marnotrawstwo przepustowości sieci, aby rozgłaszać je wszystkie do wszystkich serwerów na świecie.</p>
+<p>Maski domen są więc ogromną pomocą, ale jak ich używać?</p>
+<p>Mogą być zdefiniowane w linii “N” dla danej konfiguracji, a zamiast “Maska Domeny” wpisujesz magiczną liczbę zwana liczbą masek.</p>
+<p>Liczba masek mówi, ILE CZĘŚCI nazwy Twojego serwera ma zostać zastąpione maską. Na przykład nazwa Twojego serwera to “<a href="http://tolsun.oulu.fi">tolsun.oulu.fi</a>”, a Ty chcesz, żeby była reprezentowana jako “*.oulu.fi” dla “<a href="http://nic.funet.fi">nic.funet.fi</a>”. W tym przypadku liczba masek wynosi 1, ponieważ tylko jedno słowo (tolsun) zostanie zastąpione maską.</p>
+<p>Jeśli liczba masek wynosiłaby 2, maska domeny brzmiałaby “<em>.fi". Należy zauważyć, że używając maski domeny "</em>.fi”, NIE MOŻESZ połączyć się z “<a href="http://nic.funet.fi">nic.funet.fi</a>”, ponieważ spowodowałoby to kolizję nazw serwerów (*.fi pasuje do <a href="http://nic.funet.fi">nic.funet.fi</a>).</p>
+<p>Radzę nie używać serwerów z maską domen, zanim dokładnie nie zrozumiesz, jak się ich używa. Są one głównie korzystne dla “backbonów” krajów i innych obszarów o wspólnych domenach.</p>
+<h2 id="zabraniaj-automatycznych-połączeń">4.9 Zabraniaj automatycznych połączeń</h2>
+<p>Wprowadzenie<br>
+Wpisy typu D (ang. D lines) zostały wprowadzone, aby umożliwić administratorom serwerów większą kontrolę nad tym, jak są wykonywane automatyczne połączenia. Prawdopodobnie będzie to przydatne tylko dla dużych sieci, które mają skomplikowane konfiguracje.</p>
+<p>Format<br>
+D::Klasa Zakazana::Klasa Serwera:<br>
+Zakazana Maska Serwera<br>
+To pole jest porównywane ze wszystkimi serwerami obecnie obecnymi w sieci.</p>
+<p>Klasa Zakazana<br>
+Jeśli to pole zawiera numer klasy, zostanie dopasowane, jeśli w sieci obecny jest serwer należący do tej klasy. Należy zauważyć, że może to być prawdą dla każdego serwera, nawet tych, które nie są bezpośrednio podłączone.</p>
+<p>Nazwa Serwera<br>
+To pole jest porównywane z nazwą serwera, do którego serwer chce się automatycznie połączyć.</p>
+<p>Klasa Serwera<br>
+To pole jest używane do porównywania z klasą, do której należą serwery, dla których ustawione jest automatyczne połączenie.</p>
+<p>Przykłady<br>
+D:<em>.edu::</em>.fi::</p>
+<p>Nie łącz się automatycznie z żadnym serwerem <code>*.fi'', jeśli którykolwiek serwer obecny w sieci pasuje do</code>*.edu’’.</p>
+<p>D::2:eff.org:3:</p>
+<p>Nie łącz się automatycznie z <code>eff.org'', ani z żadnym serwerem należącym do klasy</code>3’’, jeśli serwer zdefiniowany jako należący do klasy ``2’’ jest obecnie w sieci.</p>
+<h2 id="połączenia-typu-hub">4.10 Połączenia typu Hub</h2>
+<p>Wprowadzenie<br>
+W przeciwieństwie do linii typu L, serwer implementuje także linie typu H, aby określić, które serwery mogą działać jako huby (węzły) i dla jakich serwerów mogą “hubować”. Jeśli serwer ma dostarczyć tylko swoją nazwę (to znaczy działać jako samotny liść), to nie jest wymagana żadna linia H, w przeciwnym przypadku należy dodać linię H.</p>
+<p>Format<br>
+H:::::<br>
+Maska Serwera<br>
+Wszystkie serwery, które są dozwolone za pomocą tej linii H, muszą pasować do maski podanej w tym polu.</p>
+<p>Maska SID<br>
+SID wszystkich serwerów, które są dozwolone za pomocą tej linii H, muszą pasować do maski podanej w tym polu. Puste pole jest równe ‘*’, co oznacza, że ​​dowolny SID może zostać wprowadzony.</p>
+<p>Nazwa Serwera<br>
+To pole jest używane do dokładnego dopasowania nazwy serwera, przy czym znaki wieloznaczne traktowane są jako znaki literalne.</p>
+<p>Przykłady<br>
+H:<em>.edu::</em>.bu.edu::</p>
+<p>Pozwala serwerowi o nazwie <code>*.bu.edu'' na wprowadzenie tylko serwerów, które pasują do maski nazw</code>*.edu’’, niezależnie od SID, który mają.</p>
+<p>H:<em>:616</em>:eff.org::</p>
+<p>Pozwala serwerowi <code>eff.org'' na wprowadzanie (i działanie jako hub) dla każdego serwera, którego SID zaczyna się od</code>616’’.</p>
+<p>Uwaga<br>
+Możliwe jest posiadanie i używanie wielu linii H (lub L) dla jednego serwera. Na przykład:</p>
+<p>H:<em>.edu:</em>:<em>.bu.edu::<br>
+H:</em>.au:<em>:</em>.bu.edu::<br>
+jest dozwolone, podobnie jak</p>
+<p>L:<em>.edu:</em>:<em>.au::<br>
+L:</em>.com:<em>:</em>.au::</p>
+<h2 id="połączenia-typu-leaf">4.11 Połączenia typu Leaf</h2>
+<p>Wprowadzenie<br>
+Aby zapobiec serwerom, które powinny działać tylko jako liście (leaf), przypadkowo stawaniu się węzłami (hub), wprowadzono linię L, dzięki której węzły mogą dowiedzieć się, które serwery powinny i nie powinny być traktowane jako liście. Serwer typu leaf powinien pozostać węzłem (node) przez cały okres swojego życia, podczas gdy jest podłączony do sieci serwerów IRC. Jest jednak dość łatwo źle skonfigurować serwer typu leaf, co może stworzyć problemy, stając się węzłem dwóch lub więcej serwerów i przestając być leafem. Linia L pozwala administratorowi serwera IRC typu “Hub” “zatrzymać” serwer, który ma działać jako leaf i próbuje stać się węzłem. Na przykład serwer typu leaf, który łączy się z innym serwerem, który nie ma dla niego linii L, zostanie rozłączony przez ten serwer, przywracając go jako leafa.</p>
+<p>Format<br>
+L::*::&lt;Maksymalna Głębokość&gt;:<br>
+Maska Serwera<br>
+Maska serwerów, na których mają być używane cechy typu leaf, gdy serwer odbiera komunikaty SERVER. W tej rubryce można używać znaków wieloznacznych * i ?, które pomagają w dopasowaniu. Jeśli to pole jest puste, działa to tak samo, jak gdyby była jednym znakiem * (czyli dopasowanie wszystkiego).</p>
+<p>Nazwa Serwera<br>
+Nazwa serwera, który jest podłączony do ciebie i dla którego chcesz narzucić cechy typu leaf.</p>
+<p>Maksymalna Głębokość<br>
+Maksymalna dozwolona głębokość dla tego leafa, a jeśli nie jest określona, przyjmuje się wartość 1. Głębokość jest sprawdzana za każdym razem, gdy serwer odbiera komunikat SERVER. Liczba skoków do serwera jest polem, które jest sprawdzane w kontekście maksymalnej głębokości, a jeśli jest większa, połączenie do serwera, które uczyniło swojego leafa zbyt głęboko, zostaje zerwane. Aby linia L zadziałała, oba pola, 2 i 4, muszą pasować do nowego serwera wprowadzanego i serwera odpowiedzialnego za wprowadzenie tego nowego serwera.</p>
+<h2 id="ograniczenia-wersji">4.12 Ograniczenia wersji</h2>
+<p>Wprowadzenie<br>
+Linie V są używane do ograniczania połączeń serwerów do Twojego serwera na podstawie ich wersji i opcji kompilacji.</p>
+<p>Format<br>
+V:::::<br>
+Maska Wersji<br>
+Pasujące ciągi numerów wersji zostaną odrzucone.</p>
+<p>Flagi<br>
+Jeśli jakiekolwiek flagi określone w tej rubryce zostaną znalezione w ciągu flag partnera, połączenie zostanie odrzucone.</p>
+<p>Maska Serwera<br>
+To pole jest używane do dopasowywania nazw serwerów. Linia V będzie używana dla serwerów pasujących do maski podanej w tym polu.</p>
+<p>Typ Serwera<br>
+Zarówno Maska Wersji, jak i Flagi powinny być poprzedzone identyfikacją typu serwera. Ta implementacja używa id “IRC” (zaczynając od wersji 2.10).</p>
+<p>Przykłady<br>
+V:IRC/021001*::*::</p>
+<p>Zakazuje połączenia dowolnemu serwerowi “IRC” o wersji 2.10.1*.</p>
+<p>V:IRC/021001*:IRC/D:*::</p>
+<p>Zakazuje połączenia dowolnemu serwerowi “IRC” o wersji 2.10.1* lub skompilowanemu z zdefiniowaną opcją DEBUGMODE.</p>
+<p>V:<em>/0209</em>::::</p>
+<p>Zakazuje połączenia dowolnemu serwerowi korzystającemu z protokołu 2.9.</p>
+<p>Uwaga<br>
+Możliwe jest posiadanie i używanie wielu linii V dla jednej maski serwera.</p>
+<p>V:IRC/021001*::*::</p>
+<p>V:IRC/021002*::*::</p>
+<p>jest dozwolone.</p>
+<p>Wersja Protokołu<br>
+Tylko pierwsze 4 cyfry numeru wersji są standardowe: definiują one wersję protokołu. Reszta ciągu zależy od implementacji; dopasowania do tej części powinny być używane z konkretną identyfikacją.</p>
+<p>Flagi<br>
+nie są standardowe. Dlatego to pole powinno zawsze zawierać konkretną identyfikację.</p>
+<h2 id="wykluczone-maszyny">4.13 Wykluczone maszyny</h2>
+<p>Zabranianie SERVEROM na twojej sieci IRC.</p>
+<p>Wprowadzenie<br>
+W niektórych przypadkach administratorzy sieci napotykają na trudności w zarządzaniu siecią. Z różnych powodów możesz nie chcieć, aby pewien serwer był w twojej sieci (na przykład ze względu na otwarte luki w zabezpieczeniach, które otwiera dla każdego serwera, jeśli nie jest odpowiednio zabezpieczony). W takim przypadku powinieneś użyć linii Q w swoim serwerze. Gdy określisz nazwę serwera w linii Q, za każdym razem, gdy jakiś serwer próbuje wprowadzić na twoim serwerze inny serwer (pamiętaj, że wszystkie nazwy serwerów są rozgłaszane po sieci), ta nazwa jest sprawdzana pod kątem dopasowania do linii Q na twoim serwerze. Jeśli pasuje, twój serwer rozłącza połączenie. Należy zauważyć, że umieszczenie linii Q w twoim serwerze prawdopodobnie sprawi, że twój serwer zostanie sam (nie zostanie wprowadzony nowy serwer), chyba że inne serwery zgodziły się również na umieszczenie tej samej linii Q w swoich plikach konfiguracyjnych ircd.</p>
+<p>Przykład<br>
+Q::z powodu luk w zabezpieczeniach:foo.bar.baz::</p>
+<p>To polecenie wyklucza serwer o nazwie “foo.bar.baz”, jako przyczynę podano luki w zabezpieczeniach (należy podać powód, to jest uprzejme). Pierwsze pole jest nieużywane, więc pozostaw je puste.</p>
+<h2 id="połączenia-usług">4.14 Połączenia usług</h2>
+<p>Wprowadzenie<br>
+Usługa to szczególny rodzaj klienta IRC. Nie ma on pełnych zdolności normalnego użytkownika, ale może zachowywać się w sposób bardziej aktywny niż zwykły klient.</p>
+<p>Usługi nie są przeznaczone do użytku interaktywnego i lepiej sprawdzają się jako klienty automatyczne.</p>
+<p>Format<br>
+S::&lt;Hasło&gt;:&lt;Nazwa Usługi&gt;:&lt;Typ Usługi&gt;:<br>
+Maska Hosta CELU<br>
+Maska hosta powinna być ustawiona tak, aby pasowała do hosta(lub hostów), z których usługa będzie się łączyć. Może to być zarówno numer IP, jak i pełna nazwa (preferowana).</p>
+<p>Hasło<br>
+To hasło, które musi być przekazane w poleceniu SERVICE.</p>
+<p>Nazwa Usługi<br>
+Nazwa używana przez usługę. Usługi nie mają pseudonimów, ale mają stałą nazwę zdefiniowaną w linii S.</p>
+<p>Typ Usługi<br>
+Typ usługi określa uprawnienia danej usługi. Bądź bardzo ostrożny w udzielaniu uprawnień. Typy usług można znaleźć w include/service.h</p>
+<p>Klasa<br>
+Pole klasy powinno odnosić się do istniejącej klasy.</p>
+<p>Uwagi<br>
+Usługa to niezbyt przydatny rodzaj klienta, nie może dołączać do kanałów ani wydawać pewnych poleceń, chociaż większość z nich jest dostępna. Usługi są odrzucane po wysłaniu nieznanego lub niedozwolonego polecenia. Usługi jednak nie podlegają kontroli nad nadmiernym ruchem i mogą uzyskać specjalne przywileje. Dlatego mądrze jest bardzo ostrożnie korzystać z linii S.</p>
+<h2 id="serwer-przekierowujący-bounce">4.15 Serwer przekierowujący (bounce)</h2>
+<p>Wprowadzenie<br>
+To dostarcza sposób przekierowywania klientów na inny serwer. Te informacje są udostępniane klientom, którzy są odrzucani podczas próby połączenia, albo dlatego, że ich klasa połączenia jest pełna, albo serwer jest pełen, albo nie są upoważnieni do połączenia.</p>
+<p>Format<br>
+B:&lt;Klasa|Maska Hosta&gt;::::<br>
+B<br>
+To określa rekord przekierowania.</p>
+<p>Klasa|Maska Hosta<br>
+To pole określa, do którego klienta ma być stosowana ta linia konfiguracyjna. Może to być numer klasy połączenia, maska hosta, która ma pasować do nazwy hosta klienta, lub adres IP/maska/bitmaska, która ma pasować do adresu IP klienta.</p>
+<p>Kiedy serwer jest całkowicie zajęty, odrzuca klientów z komunikatem “Wszystkie połączenia są w użyciu”. W takim przypadku serwer nie przetwarza połączeń w ogóle i nie ma wiedzy o nazwie hosta klienta ani numerze klasy. W tych przypadkach to pole musi być puste.</p>
+<p>Nazwa Serwera<br>
+To określa nazwę hosta serwera IRC, którą klient powinien używać.</p>
+<p>Port<br>
+To określa port serwera IRC, do którego klient powinien się podłączyć.</p>
+<p>Przykład<br>
+B:2::irc.stealth.net:6660:</p>
+<p>Odrzuceni klienci z klasy 2 są informowani, że powinni użyć “<a href="http://irc.stealth.net">irc.stealth.net</a>” na porcie 6660.</p>
+<p>B:*.fi::irc.funet.fi:6667:</p>
+<p>Klienci z Finlandii powinni używać <a href="http://irc.funet.fi">irc.funet.fi</a>, gdy nie można ich przyjąć gdzie indziej.</p>
+<p>B:::irc2.stealth.net:6667:</p>
+<p>Gdy serwer jest całkowicie zajęty, klienci powinni używać serwera zapasowego “<a href="http://irc2.stealth.net">irc2.stealth.net</a>” na porcie 6667.</p>
+
+    </div>
+  </div>
+</body>
+
+</html>
